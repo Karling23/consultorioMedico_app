@@ -1,6 +1,9 @@
-import TestMUI from "./components/TestMUI";
+import { useRoutes } from "react-router-dom";
+import { appRoutes } from "./routes/app.routes";
+import { AuthProvider } from "./context/AuthContext";
 import type { JSX } from "react";
 
 export default function App(): JSX.Element {
-  return <TestMUI />;
+  const element = useRoutes(appRoutes);
+  return <AuthProvider>{element}</AuthProvider>;
 }
