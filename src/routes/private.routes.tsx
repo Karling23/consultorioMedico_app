@@ -4,6 +4,7 @@ import PrivatePlaceholder from "../pages/private/PrivatePlaceholder";
 import MedicamentosPage from "../pages/private/MedicamentosPage";
 import CitasMedicasPage from "../pages/private/CitasMedicasPage";
 import PacientesPage from "../pages/private/PacientesPage";
+import ConsultoriosPage from "../pages/private/ConsultoriosPage";
 
 export const privateRoutes: RouteObject = {
     path: "/dashboard",
@@ -14,5 +15,6 @@ export const privateRoutes: RouteObject = {
         { path: "users", element: <PrivatePlaceholder title="Users" /> },
         { path: "citas-medicas", element: <CitasMedicasPage /> },
         { path: "pacientes",  element: <PacientesPage /> },
+        { path: "consultorios", element: <ConsultoriosPage /> },
     ],
 };
