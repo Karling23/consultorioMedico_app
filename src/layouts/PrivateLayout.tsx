@@ -22,6 +22,7 @@ import CategoryIcon from "@mui/icons-material/Category";
 import ArticleIcon from "@mui/icons-material/Article";
 import GroupIcon from "@mui/icons-material/Group";
 import EventIcon from '@mui/icons-material/Event';
+import PeopleIcon from '@mui/icons-material/People';
 
 const drawerWidth = 260;
 
@@ -35,6 +36,7 @@ const navItems: NavItem[] = [
     { label: "Inicio", to: "/dashboard", icon: <DashboardIcon /> },
     { label: "Medicamentos", to: "/dashboard/medicamentos", icon: <CategoryIcon /> },
     { label: "Citas Médicas", to: "/dashboard/citas-medicas", icon: <EventIcon /> },
+    { label: "Pacientes", to: "/dashboard/pacientes", icon: <PeopleIcon /> },
     { label: "Posts", to: "/dashboard/posts", icon: <ArticleIcon /> },
     { label: "Usuarios", to: "/dashboard/users", icon: <GroupIcon /> },
 ];
