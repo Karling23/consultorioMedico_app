@@ -57,6 +57,7 @@ export default function UsersPage(): JSX.Element {
     const [totalPages, setTotalPages] = useState(1);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [success, setSuccess] = useState<string | null>(null);
 
     const [open, setOpen] = useState(false);
     const [mode, setMode] = useState<"create" | "edit">("create");
@@ -100,12 +101,14 @@ export default function UsersPage(): JSX.Element {
     }, [queryKey, isAdmin]);
 
     const onCreate = () => {
+        setSuccess(null);
         setMode("create");
         setCurrent(null);
         setOpen(true);
     };
 
     const onEdit = (u: UsuarioDto) => {
+        setSuccess(null);
         setMode("edit");
         setCurrent(u);
         setOpen(true);
@@ -118,6 +121,7 @@ export default function UsersPage(): JSX.Element {
     }) => {
         try {
             setError(null);
+            setSuccess(null);
             if (mode === "create") {
                 await createUsuario({
                     nombre_usuario: payload.nombre_usuario,
@@ -126,6 +130,7 @@ export default function UsersPage(): JSX.Element {
                 });
                 setOpen(false);
                 setPage(1);
+                setSuccess("Usuario creado exitosamente.");
                 return;
             }
 
@@ -133,6 +138,7 @@ export default function UsersPage(): JSX.Element {
 
             await updateUsuario(current.id_usuario, payload);
             setOpen(false);
+            setSuccess("Usuario actualizado exitosamente.");
         } catch {
             setError("No se pudo guardar el usuario.");
         } finally {
@@ -145,10 +151,12 @@ export default function UsersPage(): JSX.Element {
     const onDelete = async (id: number) => {
         try {
             setError(null);
+            setSuccess(null);
             await deleteUsuario(id);
             const res = await getUsuarios(queryKey);
             setItems(res.items);
             setTotalPages(res.meta.totalPages || 1);
+            setSuccess("Usuario eliminado del sistema.");
         } catch {
             setError("No se pudo eliminar el usuario.");
         }
@@ -175,6 +183,7 @@ export default function UsersPage(): JSX.Element {
             </Stack>
 
             {error && <Alert severity="error">{error}</Alert>}
+            {success && <Alert severity="success">{success}</Alert>}
 
             <TextField
                 label="Buscar"

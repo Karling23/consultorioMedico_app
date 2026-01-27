@@ -42,7 +42,7 @@ export async function createPaciente(payload: Partial<PacienteDto>) {
 }
 
 export async function updatePaciente(id: number, payload: Partial<PacienteDto>) {
-  const { data } = await api.patch(`/pacientes/${id}`, payload);
+  const { data } = await api.put(`/pacientes/${id}`, payload);
   return data;
 }
 

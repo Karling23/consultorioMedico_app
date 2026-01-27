@@ -58,6 +58,7 @@ export default function MedicamentosPage(): JSX.Element {
     const [totalPages, setTotalPages] = useState(1);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [success, setSuccess] = useState<string | null>(null);
 
     const [open, setOpen] = useState(false);
     const [mode, setMode] = useState<"create" | "edit">("create");
@@ -96,6 +97,7 @@ export default function MedicamentosPage(): JSX.Element {
         try {
         setLoading(true);
         setError(null);
+        setSuccess(null);
         const res = await getMedicamentos(queryKey);
         setItems(res.items);
         setTotalPages(res.meta.totalPages || 1);
@@ -115,6 +117,7 @@ export default function MedicamentosPage(): JSX.Element {
         setError("No tienes permisos para crear medicamentos.");
         return;
         }
+        setSuccess(null);
         setMode("create");
         setCurrent(null);
         setOpen(true);
@@ -125,6 +128,7 @@ export default function MedicamentosPage(): JSX.Element {
         setError("No tienes permisos para editar medicamentos.");
         return;
         }
+        setSuccess(null);
         setMode("edit");
         setCurrent(m);
         setOpen(true);
@@ -138,6 +142,7 @@ export default function MedicamentosPage(): JSX.Element {
     }) => {
         try {
         setError(null);
+        setSuccess(null);
 
         if (!isAdmin) {
             setError("No tienes permisos para guardar medicamentos.");
@@ -149,6 +154,7 @@ export default function MedicamentosPage(): JSX.Element {
             setOpen(false);
             setPage(1);
             await load();
+            setSuccess("Medicamento creado exitosamente.");
             return;
         }
 
@@ -157,6 +163,7 @@ export default function MedicamentosPage(): JSX.Element {
         await updateMedicamento(current.id, payload);
         setOpen(false);
         await load();
+        setSuccess("Medicamento actualizado exitosamente.");
         } catch {
         setError("No se pudo guardar el medicamento.");
         }
@@ -165,12 +172,14 @@ export default function MedicamentosPage(): JSX.Element {
     const onDelete = async (id: string) => {
         try {
         setError(null);
+        setSuccess(null);
         if (!isAdmin) {
             setError("No tienes permisos para eliminar medicamentos.");
             return;
         }
         await deleteMedicamento(id);
         await load();
+        setSuccess("Medicamento eliminado del sistema.");
         } catch {
         setError("No se pudo eliminar el medicamento.");
         }
@@ -195,6 +204,7 @@ export default function MedicamentosPage(): JSX.Element {
         </Stack>
 
         {error && <Alert severity="error">{error}</Alert>}
+        {success && <Alert severity="success">{success}</Alert>}
 
         <TextField
             label="Buscar (por nombre)"
@@ -215,6 +225,8 @@ export default function MedicamentosPage(): JSX.Element {
                     <TableRow>
                     <TableCell>Nombre</TableCell>
                     <TableCell>Descripción</TableCell>
+                    <TableCell>Precio</TableCell>
+                    <TableCell>Stock</TableCell>
                     {isAdmin && <TableCell align="right">Acciones</TableCell>}
                     </TableRow>
                 </TableHead>
@@ -224,6 +236,8 @@ export default function MedicamentosPage(): JSX.Element {
                     <TableRow key={m.id}>
                         <TableCell>{m.nombre}</TableCell>
                         <TableCell>{m.descripcion || "-"}</TableCell>
+                        <TableCell>{typeof m.precio === "number" ? m.precio.toFixed(2) : "-"}</TableCell>
+                        <TableCell>{m.stock ?? "-"}</TableCell>
                         {isAdmin && (
                             <TableCell align="right">
                             <IconButton onClick={() => onEdit(m)}>

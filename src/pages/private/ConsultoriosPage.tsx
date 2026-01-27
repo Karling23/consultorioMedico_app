@@ -1,6 +1,7 @@
 import {
   Box,
   Button,
+  Alert,
   Chip,
   CircularProgress,
   Container,
@@ -40,12 +41,14 @@ function useDebouncedValue<T>(value: T, delay: number): T {
 export default function ConsultoriosPage() {
   // 2. Verificamos Rol
   const { user } = useAuth();
-  const isAdmin = user?.rol === 'admin';
+  const isAdmin = (user?.rol || "").toLowerCase() === "admin";
 
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebouncedValue(search, 500);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
   const [data, setData] = useState<PaginatedConsultorios<ConsultorioDto> | null>(null);
   const [openDialog, setOpenDialog] = useState(false);
@@ -54,6 +57,8 @@ export default function ConsultoriosPage() {
   const fetchData = async () => {
     setLoading(true);
     try {
+      setError(null);
+      setSuccess(null);
       const result = await getConsultorios({
         page,
         limit: 10,
@@ -61,6 +66,7 @@ export default function ConsultoriosPage() {
       });
       setData(result);
     } catch (error) {
+      setError("No se pudieron cargar los consultorios.");
       console.error("Error cargando consultorios", error);
     } finally {
       setLoading(false);
@@ -72,21 +78,29 @@ export default function ConsultoriosPage() {
   }, [page, debouncedSearch]);
 
   const handleDelete = async (id: number) => {
+    if (!isAdmin) return;
     if (!confirm("¿Estás seguro de eliminar este consultorio?")) return;
     try {
+      setError(null);
+      setSuccess(null);
       await deleteConsultorio(id);
       fetchData();
+      setSuccess("Consultorio eliminado del sistema.");
     } catch (error) {
-      alert("Error al eliminar");
+      const msg =
+        (error as any)?.response?.data?.message || "No se pudo eliminar el consultorio.";
+      setError(Array.isArray(msg) ? msg[0] : msg);
     }
   };
 
   const handleCreate = () => {
+    if (!isAdmin) return;
     setSelectedConsultorio(null);
     setOpenDialog(true);
   };
 
   const handleEdit = (consultorio: ConsultorioDto) => {
+    if (!isAdmin) return;
     setSelectedConsultorio(consultorio);
     setOpenDialog(true);
   };
@@ -112,6 +126,17 @@ export default function ConsultoriosPage() {
           onChange={(e) => { setSearch(e.target.value); setPage(1); }}
         />
       </Paper>
+
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {error}
+        </Alert>
+      )}
+      {success && (
+        <Alert severity="success" sx={{ mb: 2 }}>
+          {success}
+        </Alert>
+      )}
 
       {loading ? (
         <Box display="flex" justifyContent="center" p={4}><CircularProgress /></Box>
@@ -181,7 +206,15 @@ export default function ConsultoriosPage() {
         <ConsultoriosFormDialog
           open={openDialog}
           onClose={() => setOpenDialog(false)}
-          onSuccess={() => { setOpenDialog(false); fetchData(); }}
+          onSuccess={() => {
+            setOpenDialog(false);
+            fetchData();
+            setSuccess(
+              selectedConsultorio
+                ? "Consultorio actualizado exitosamente."
+                : "Consultorio creado exitosamente."
+            );
+          }}
           initialData={selectedConsultorio}
         />
       )}

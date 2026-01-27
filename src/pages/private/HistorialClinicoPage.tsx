@@ -81,6 +81,7 @@ export default function HistorialClinicoPage(): JSX.Element {
     const [totalPages, setTotalPages] = useState(1);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [success, setSuccess] = useState<string | null>(null);
 
     const [open, setOpen] = useState(false);
     const [mode, setMode] = useState<"create" | "edit">("create");
@@ -161,6 +162,7 @@ export default function HistorialClinicoPage(): JSX.Element {
         try {
             setLoading(true);
             setError(null);
+            setSuccess(null);
             if (isAdmin) {
                 await loadAdmin();
             } else {
@@ -182,6 +184,7 @@ export default function HistorialClinicoPage(): JSX.Element {
             setError("No tienes permisos para crear historial clinico.");
             return;
         }
+        setSuccess(null);
         setMode("create");
         setCurrent(null);
         setOpen(true);
@@ -192,6 +195,7 @@ export default function HistorialClinicoPage(): JSX.Element {
             setError("No tienes permisos para editar historial clinico.");
             return;
         }
+        setSuccess(null);
         setMode("edit");
         setCurrent(h);
         setOpen(true);
@@ -205,6 +209,7 @@ export default function HistorialClinicoPage(): JSX.Element {
     }) => {
         try {
             setError(null);
+            setSuccess(null);
             if (!isAdmin) {
                 setError("No tienes permisos para guardar historial clinico.");
                 return;
@@ -214,12 +219,14 @@ export default function HistorialClinicoPage(): JSX.Element {
                 setOpen(false);
                 setPage(1);
                 await load();
+                setSuccess("Historial clinico creado exitosamente.");
                 return;
             }
             if (!current) return;
             await updateHistorialClinico(current.id, payload);
             setOpen(false);
             await load();
+            setSuccess("Historial clinico actualizado exitosamente.");
         } catch {
             setError("No se pudo guardar el historial clinico.");
         }
@@ -228,16 +235,30 @@ export default function HistorialClinicoPage(): JSX.Element {
     const onDelete = async (id: string) => {
         try {
             setError(null);
+            setSuccess(null);
             if (!isAdmin) {
                 setError("No tienes permisos para eliminar historial clinico.");
                 return;
             }
             await deleteHistorialClinico(id);
             await load();
+            setSuccess("Historial clinico eliminado del sistema.");
         } catch {
             setError("No se pudo eliminar el historial clinico.");
         }
     };
+
+    const filteredItems = isAdmin
+        ? items
+        : items.filter((h) => {
+              if (!debouncedSearch.trim()) return true;
+              const term = debouncedSearch.trim().toLowerCase();
+              return (
+                  h.diagnostico?.toLowerCase().includes(term) ||
+                  h.tratamiento?.toLowerCase().includes(term) ||
+                  h.observaciones?.toLowerCase().includes(term)
+              );
+          });
 
     return (
         <Stack spacing={2}>
@@ -258,18 +279,18 @@ export default function HistorialClinicoPage(): JSX.Element {
             </Stack>
 
             {error && <Alert severity="error">{error}</Alert>}
+            {success && <Alert severity="success">{success}</Alert>}
 
             <TextField
                 label="Buscar (por diagnostico)"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 fullWidth
-                disabled={!isAdmin}
             />
 
             {loading ? (
                 <CircularProgress />
-            ) : items.length === 0 ? (
+            ) : filteredItems.length === 0 ? (
                 <Alert severity="info">No hay historial clinico para mostrar.</Alert>
             ) : (
                 <>
@@ -286,7 +307,7 @@ export default function HistorialClinicoPage(): JSX.Element {
                                 </TableRow>
                             </TableHead>
                             <TableBody>
-                                {items.map((h) => (
+                                {filteredItems.map((h) => (
                                     <TableRow key={h.id}>
                                         <TableCell>{h.id}</TableCell>
                                         <TableCell>{h.id_cita}</TableCell>

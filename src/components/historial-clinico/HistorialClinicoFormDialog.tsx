@@ -7,7 +7,7 @@ import {
     Stack,
     TextField,
 } from "@mui/material";
-import { useEffect, useState, type JSX } from "react";
+import { useEffect, useState, type JSX, type FormEvent } from "react";
 import type { HistorialClinicoDto } from "../../services/historial-clinico.service";
 
 type Props = {
@@ -44,7 +44,7 @@ export default function HistorialClinicoFormDialog({
         }
     }, [open, initial]);
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = (e: FormEvent) => {
         e.preventDefault();
         onSubmit({
             id_cita: Number(idCita),

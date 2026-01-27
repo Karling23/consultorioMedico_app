@@ -39,7 +39,7 @@ export async function createConsultorio(payload: Partial<ConsultorioDto>) {
 }
 
 export async function updateConsultorio(id: number, payload: Partial<ConsultorioDto>) {
-  const { data } = await api.patch(`/consultorios/${id}`, payload);
+  const { data } = await api.put(`/consultorios/${id}`, payload);
   return data;
 }
 

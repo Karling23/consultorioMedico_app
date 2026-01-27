@@ -42,7 +42,7 @@ export async function createCitaMedica(payload: Partial<CitaMedicaDto>) {
 }
 
 export async function updateCitaMedica(id: number, payload: Partial<CitaMedicaDto>) {
-    const { data } = await api.patch(`/citas-medicas/${id}`, payload);
+    const { data } = await api.put(`/citas-medicas/${id}`, payload);
     return data;
 }
 

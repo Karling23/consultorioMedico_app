@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type FormEvent, type JSX } from "react";
 import {
   Alert,
   Button,
@@ -11,9 +11,6 @@ import {
   MenuItem,
   TextField,
 } from "@mui/material";
-import { useForm } from "react-hook-form";
-import * as yup from "yup";
-import { yupResolver } from "@hookform/resolvers/yup";
 
 import {
   createConsultorio,
@@ -28,80 +25,77 @@ interface Props {
   initialData?: ConsultorioDto | null;
 }
 
-// Esquema de validación basado en CreateConsultorioDto
-const schema = yup.object().shape({
-  nombre: yup
-    .string()
-    .required("El nombre es obligatorio")
-    .max(50, "Máximo 50 caracteres"),
-  ubicacion: yup
-    .string()
-    .required("La ubicación es obligatoria") // Aunque el backend dice nullable, el DTO dice String. Mejor que sea obligatorio o string vacío.
-    .max(100, "Máximo 100 caracteres"),
-  estado: yup
-    .string()
-    .oneOf(["activo", "inactivo"], "El estado debe ser activo o inactivo")
-    .required("El estado es obligatorio"),
-});
-
-type FormData = yup.inferType<typeof schema>;
+type FieldErrors = {
+  nombre?: string;
+  ubicacion?: string;
+  estado?: string;
+};
 
 export const ConsultoriosFormDialog = ({
   open,
   onClose,
   onSuccess,
   initialData,
-}: Props) => {
+}: Props): JSX.Element => {
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const isEditMode = !!initialData;
 
-  const {
-    register,
-    handleSubmit,
-    reset,
-    setValue,
-    formState: { errors },
-  } = useForm<FormData>({
-    resolver: yupResolver(schema),
-    defaultValues: {
-      nombre: "",
-      ubicacion: "",
-      estado: "activo",
-    },
-  });
+  const [nombre, setNombre] = useState("");
+  const [ubicacion, setUbicacion] = useState("");
+  const [estado, setEstado] = useState<"activo" | "inactivo">("activo");
 
   useEffect(() => {
-    if (open) {
-      setErrorMessage(null);
-      if (initialData) {
-        // Modo Edición
-        setValue("nombre", initialData.nombre);
-        setValue("ubicacion", initialData.ubicacion);
-        setValue("estado", initialData.estado as any);
-      } else {
-        // Modo Creación
-        reset({
-          nombre: "",
-          ubicacion: "",
-          estado: "activo",
-        });
-      }
-    }
-  }, [open, initialData, reset, setValue]);
+    if (!open) return;
+    setErrorMessage(null);
+    setFieldErrors({});
 
-  const onSubmit = async (data: FormData) => {
+    if (initialData) {
+      setNombre(initialData.nombre || "");
+      setUbicacion(initialData.ubicacion || "");
+      setEstado((initialData.estado as any) || "activo");
+    } else {
+      setNombre("");
+      setUbicacion("");
+      setEstado("activo");
+    }
+  }, [open, initialData]);
+
+  const validate = (): FieldErrors => {
+    const errors: FieldErrors = {};
+    if (!nombre.trim()) errors.nombre = "El nombre es obligatorio";
+    if (!ubicacion.trim()) errors.ubicacion = "La ubicacion es obligatoria";
+    if (!estado) errors.estado = "El estado es obligatorio";
+    return errors;
+  };
+
+  const onSubmit = async (e: FormEvent) => {
+    e.preventDefault();
     setLoading(true);
     setErrorMessage(null);
+
+    const errors = validate();
+    setFieldErrors(errors);
+    if (Object.keys(errors).length > 0) {
+      setLoading(false);
+      return;
+    }
+
     try {
+      const payload = {
+        nombre: nombre.trim(),
+        ubicacion: ubicacion.trim(),
+        estado,
+      };
+
       if (isEditMode && initialData) {
-        await updateConsultorio(initialData.id_consultorio, data);
+        await updateConsultorio(initialData.id_consultorio, payload);
       } else {
-        await createConsultorio(data);
+        await createConsultorio(payload);
       }
       onSuccess();
     } catch (error: any) {
-      console.error("Error guardando consultorio:", error);
       const msg = error.response?.data?.message || "Error al guardar el consultorio";
       setErrorMessage(Array.isArray(msg) ? msg[0] : msg);
     } finally {
@@ -112,10 +106,10 @@ export const ConsultoriosFormDialog = ({
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
       <DialogTitle>
-        {isEditMode ? `Editar Consultorio #${initialData.id_consultorio}` : "Nuevo Consultorio"}
+        {isEditMode ? `Editar Consultorio #${initialData?.id_consultorio}` : "Nuevo Consultorio"}
       </DialogTitle>
 
-      <form onSubmit={handleSubmit(onSubmit)}>
+      <form onSubmit={onSubmit}>
         <DialogContent dividers>
           {errorMessage && (
             <Alert severity="error" sx={{ mb: 2 }}>
@@ -124,40 +118,39 @@ export const ConsultoriosFormDialog = ({
           )}
 
           <Grid container spacing={2}>
-            {/* Nombre */}
             <Grid item xs={12}>
               <TextField
                 fullWidth
                 label="Nombre del Consultorio"
-                error={!!errors.nombre}
-                helperText={errors.nombre?.message}
-                {...register("nombre")}
+                value={nombre}
+                onChange={(e) => setNombre(e.target.value)}
+                error={!!fieldErrors.nombre}
+                helperText={fieldErrors.nombre}
               />
             </Grid>
 
-            {/* Ubicación */}
             <Grid item xs={12}>
               <TextField
                 fullWidth
-                label="Ubicación"
+                label="Ubicacion"
                 multiline
                 rows={2}
-                error={!!errors.ubicacion}
-                helperText={errors.ubicacion?.message}
-                {...register("ubicacion")}
+                value={ubicacion}
+                onChange={(e) => setUbicacion(e.target.value)}
+                error={!!fieldErrors.ubicacion}
+                helperText={fieldErrors.ubicacion}
               />
             </Grid>
 
-            {/* Estado */}
             <Grid item xs={12}>
               <TextField
                 fullWidth
                 select
                 label="Estado"
-                defaultValue="activo"
-                error={!!errors.estado}
-                helperText={errors.estado?.message}
-                {...register("estado")}
+                value={estado}
+                onChange={(e) => setEstado(e.target.value as "activo" | "inactivo")}
+                error={!!fieldErrors.estado}
+                helperText={fieldErrors.estado}
               >
                 <MenuItem value="activo">Activo</MenuItem>
                 <MenuItem value="inactivo">Inactivo</MenuItem>

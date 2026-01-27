@@ -1,4 +1,4 @@
-import {Box,Button,CircularProgress,Container,IconButton,Pagination,Paper,Stack,Table,TableBody,
+import {Alert,Box,Button,CircularProgress,Container,IconButton,Pagination,Paper,Stack,Table,TableBody,
 TableCell,TableContainer,TableHead,TableRow,TextField,
 Typography,} from "@mui/material";
 import { useEffect, useState } from "react";
@@ -24,12 +24,14 @@ function useDebouncedValue<T>(value: T, delay: number): T {
 export default function PacientesPage() {
   // 2. OBTENEMOS EL USUARIO DEL CONTEXTO
   const { user } = useAuth(); 
-  const isAdmin = user?.rol === 'admin'; 
+  const isAdmin = (user?.rol || "").toLowerCase() === "admin"; 
 
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebouncedValue(search, 500);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
   
   const [data, setData] = useState<PaginatedPacientes<PacienteDto> | null>(null);
   const [openDialog, setOpenDialog] = useState(false);
@@ -38,6 +40,8 @@ export default function PacientesPage() {
   const fetchData = async () => {
     setLoading(true);
     try {
+      setError(null);
+      setSuccess(null);
       const result = await getPacientes({
         page,
         limit: 10,
@@ -45,6 +49,7 @@ export default function PacientesPage() {
       });
       setData(result);
     } catch (error) {
+      setError("No se pudieron cargar los pacientes.");
       console.error("Error cargando pacientes", error);
     } finally {
       setLoading(false);
@@ -56,21 +61,29 @@ export default function PacientesPage() {
   }, [page, debouncedSearch]);
 
   const handleDelete = async (id: number) => {
+    if (!isAdmin) return;
     if (!confirm("¿Estás seguro de eliminar este paciente?")) return;
     try {
+      setError(null);
+      setSuccess(null);
       await deletePaciente(id);
       fetchData();
+      setSuccess("Paciente eliminado del sistema.");
     } catch (error) {
-      alert("Error al eliminar");
+      const msg =
+        (error as any)?.response?.data?.message || "No se pudo eliminar el paciente.";
+      setError(Array.isArray(msg) ? msg[0] : msg);
     }
   };
 
   const handleCreate = () => {
+    if (!isAdmin) return;
     setSelectedPaciente(null);
     setOpenDialog(true);
   };
 
   const handleEdit = (paciente: PacienteDto) => {
+    if (!isAdmin) return;
     setSelectedPaciente(paciente);
     setOpenDialog(true);
   };
@@ -101,6 +114,17 @@ export default function PacientesPage() {
         />
       </Paper>
 
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {error}
+        </Alert>
+      )}
+      {success && (
+        <Alert severity="success" sx={{ mb: 2 }}>
+          {success}
+        </Alert>
+      )}
+
       {loading ? (
         <Box display="flex" justifyContent="center" p={4}>
           <CircularProgress />
@@ -111,7 +135,9 @@ export default function PacientesPage() {
             <TableHead>
               <TableRow>
                 <TableCell>ID</TableCell>
+                <TableCell>ID Usuario</TableCell>
                 <TableCell>Cédula</TableCell>
+                <TableCell>Fecha Nacimiento</TableCell>
                 <TableCell>Teléfono</TableCell>
                 <TableCell>Dirección</TableCell>
                 
@@ -124,7 +150,9 @@ export default function PacientesPage() {
               {data?.items.map((paciente) => (
                 <TableRow key={paciente.id_paciente}>
                   <TableCell>{paciente.id_paciente}</TableCell>
+                  <TableCell>{paciente.id_usuario}</TableCell>
                   <TableCell>{paciente.cedula}</TableCell>
+                  <TableCell>{paciente.fecha_nacimiento?.slice(0, 10) || "-"}</TableCell>
                   <TableCell>{paciente.telefono}</TableCell>
                   <TableCell>{paciente.direccion}</TableCell>
                   
@@ -144,7 +172,7 @@ export default function PacientesPage() {
               ))}
               {data?.items.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={isAdmin ? 5 : 4} align="center">
+                  <TableCell colSpan={isAdmin ? 7 : 6} align="center">
                     No se encontraron pacientes.
                   </TableCell>
                 </TableRow>
@@ -173,6 +201,9 @@ export default function PacientesPage() {
           onSuccess={() => {
             setOpenDialog(false);
             fetchData();
+            setSuccess(
+              selectedPaciente ? "Paciente actualizado exitosamente." : "Paciente creado exitosamente."
+            );
           }}
           initialData={selectedPaciente}
         />
