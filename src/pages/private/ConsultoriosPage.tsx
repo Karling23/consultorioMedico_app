@@ -18,7 +18,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
@@ -54,7 +54,15 @@ export default function ConsultoriosPage() {
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedConsultorio, setSelectedConsultorio] = useState<ConsultorioDto | null>(null);
 
-  const fetchData = async () => {
+  type ApiError = {
+    response?: {
+      data?: {
+        message?: string | string[];
+      };
+    };
+  };
+
+  const fetchData = useCallback(async () => {
     setLoading(true);
     try {
       setError(null);
@@ -71,11 +79,11 @@ export default function ConsultoriosPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [page, debouncedSearch]);
 
   useEffect(() => {
     fetchData();
-  }, [page, debouncedSearch]);
+  }, [fetchData]);
 
   const handleDelete = async (id: number) => {
     if (!isAdmin) return;
@@ -88,7 +96,7 @@ export default function ConsultoriosPage() {
       setSuccess("Consultorio eliminado del sistema.");
     } catch (error) {
       const msg =
-        (error as any)?.response?.data?.message || "No se pudo eliminar el consultorio.";
+        (error as ApiError)?.response?.data?.message || "No se pudo eliminar el consultorio.";
       setError(Array.isArray(msg) ? msg[0] : msg);
     }
   };

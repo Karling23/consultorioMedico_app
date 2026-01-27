@@ -23,13 +23,12 @@ import MenuIcon from "@mui/icons-material/Menu";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import CategoryIcon from "@mui/icons-material/Category";
 import GroupIcon from "@mui/icons-material/Group";
-import PeopleIcon from '@mui/icons-material/People';
-import LocalHospitalIcon from '@mui/icons-material/LocalHospital';
-import LinkIcon from '@mui/icons-material/Link';
-import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
+import PeopleIcon from "@mui/icons-material/People";
+import LocalHospitalIcon from "@mui/icons-material/LocalHospital";
+import LinkIcon from "@mui/icons-material/Link";
+import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
 import HistoryIcon from "@mui/icons-material/History";
 import EventIcon from "@mui/icons-material/Event";
-import PeopleIcon from "@mui/icons-material/People";
 import MeetingRoomIcon from "@mui/icons-material/MeetingRoom";
 
 const drawerWidth = 260;
@@ -39,17 +38,6 @@ type NavItem = {
     to: string;
     icon: JSX.Element;
 };
-
-const navItems: NavItem[] = [
-    { label: "Inicio", to: "/dashboard", icon: <DashboardIcon /> },
-    { label: "Medicamentos", to: "/dashboard/medicamentos", icon: <CategoryIcon /> },
-    { label: "Especialidades", to: "/dashboard/especialidades", icon: <LocalHospitalIcon /> },
-    { label: "Doctores", to: "/dashboard/doctores", icon: <PeopleIcon /> },
-    { label: "Doctores-Consultorios", to: "/dashboard/doctores-consultorios", icon: <LinkIcon /> },
-    { label: "Recetas", to: "/dashboard/recetas", icon: <ReceiptLongIcon /> },
-    { label: "Posts", to: "/dashboard/posts", icon: <ArticleIcon /> },
-    { label: "Usuarios", to: "/dashboard/users", icon: <GroupIcon /> },
-];
 
 export default function PrivateLayout(): JSX.Element {
     const { user, logout } = useAuth();
@@ -61,9 +49,13 @@ export default function PrivateLayout(): JSX.Element {
     const navItems: NavItem[] = [
         { label: "Inicio", to: "/dashboard", icon: <DashboardIcon /> },
         { label: "Medicamentos", to: "/dashboard/medicamentos", icon: <CategoryIcon /> },
+        { label: "Especialidades", to: "/dashboard/especialidades", icon: <LocalHospitalIcon /> },
+        { label: "Doctores", to: "/dashboard/doctores", icon: <PeopleIcon /> },
+        { label: "Doctores-Consultorios", to: "/dashboard/doctores-consultorios", icon: <LinkIcon /> },
         { label: "Citas medicas", to: "/dashboard/citas-medicas", icon: <EventIcon /> },
         { label: "Pacientes", to: "/dashboard/pacientes", icon: <PeopleIcon /> },
         { label: "Consultorios", to: "/dashboard/consultorios", icon: <MeetingRoomIcon /> },
+        { label: "Recetas", to: "/dashboard/recetas", icon: <ReceiptLongIcon /> },
         { label: "Historial clinico", to: "/dashboard/historial-clinico", icon: <HistoryIcon /> },
         ...(isAdmin
             ? [{ label: "Usuarios", to: "/dashboard/users", icon: <GroupIcon /> }]

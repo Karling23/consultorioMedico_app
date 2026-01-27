@@ -16,8 +16,6 @@ export const privateRoutes: RouteObject = {
     children: [
         { index: true, element: <DashboardHome /> },
         { path: "medicamentos", element: <MedicamentosPage /> },
-        { path: "posts", element: <PrivatePlaceholder title="Posts" /> },
-        { path: "users", element: <PrivatePlaceholder title="Users" /> },
         { path: "doctores", element: <DoctoresPage /> },
         { path: "especialidades", element: <EspecialidadesPage /> },
         { path: "doctores-consultorios", element: <DoctoresConsultoriosPage /> },

@@ -15,7 +15,7 @@ import {
     TextField,
     Typography,
 } from "@mui/material";
-import { useEffect, useMemo, useState, type JSX } from "react";
+import { useCallback, useEffect, useMemo, useState, type JSX } from "react";
 import { useSearchParams } from "react-router-dom";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -36,6 +36,11 @@ import { api } from "../../services/api";
 type CitaDto = {
     id_cita: number;
     id_paciente: number;
+};
+
+type RawCitaDto = {
+    id_cita?: number;
+    id_paciente?: number;
 };
 
 function useDebouncedValue<T>(value: T, delayMs: number): T {
@@ -114,13 +119,13 @@ export default function HistorialClinicoPage(): JSX.Element {
         setPage(1);
     }, [debouncedSearch]);
 
-    const loadAdmin = async () => {
+    const loadAdmin = useCallback(async () => {
         const res = await getHistorialClinico(queryKey);
         setItems(res.items);
         setTotalPages(res.meta.totalPages || 1);
-    };
+    }, [queryKey]);
 
-    const loadUser = async () => {
+    const loadUser = useCallback(async () => {
         if (!user) return;
 
         const pacientes = await fetchAllPages(async (p, l) => getPacientes({ page: p, limit: l }));
@@ -134,10 +139,10 @@ export default function HistorialClinicoPage(): JSX.Element {
         const citas = await fetchAllPages<CitaDto>(async (p, l) => {
             const { data } = await api.get("/citas-medicas", { params: { page: p, limit: l } });
             const payload = data?.data ?? data;
-            const items = Array.isArray(payload?.items) ? payload.items : [];
+            const items = Array.isArray(payload?.items) ? (payload.items as RawCitaDto[]) : [];
             const meta = payload?.meta ?? {};
             return {
-                items: items.map((c: any) => ({
+                items: items.map((c) => ({
                     id_cita: c.id_cita,
                     id_paciente: c.id_paciente,
                 })),
@@ -156,9 +161,9 @@ export default function HistorialClinicoPage(): JSX.Element {
         const filtered = historial.filter((h) => citaIds.has(h.id_cita));
         setItems(filtered);
         setTotalPages(1);
-    };
+    }, [user]);
 
-    const load = async () => {
+    const load = useCallback(async () => {
         try {
             setLoading(true);
             setError(null);
@@ -173,11 +178,11 @@ export default function HistorialClinicoPage(): JSX.Element {
         } finally {
             setLoading(false);
         }
-    };
+    }, [isAdmin, loadAdmin, loadUser]);
 
     useEffect(() => {
         load();
-    }, [queryKey, isAdmin]);
+    }, [load]);
 
     const onCreate = () => {
         if (!isAdmin) {

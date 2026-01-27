@@ -18,6 +18,14 @@ import {
   type ConsultorioDto,
 } from "../../services/consultorios.service";
 
+type ApiError = {
+  response?: {
+    data?: {
+      message?: string | string[];
+    };
+  };
+};
+
 interface Props {
   open: boolean;
   onClose: () => void;
@@ -54,7 +62,12 @@ export const ConsultoriosFormDialog = ({
     if (initialData) {
       setNombre(initialData.nombre || "");
       setUbicacion(initialData.ubicacion || "");
-      setEstado((initialData.estado as any) || "activo");
+      const nextEstado = initialData.estado;
+      if (nextEstado === "activo" || nextEstado === "inactivo") {
+        setEstado(nextEstado);
+      } else {
+        setEstado("activo");
+      }
     } else {
       setNombre("");
       setUbicacion("");
@@ -95,8 +108,9 @@ export const ConsultoriosFormDialog = ({
         await createConsultorio(payload);
       }
       onSuccess();
-    } catch (error: any) {
-      const msg = error.response?.data?.message || "Error al guardar el consultorio";
+    } catch (error) {
+      const msg =
+        (error as ApiError)?.response?.data?.message || "Error al guardar el consultorio";
       setErrorMessage(Array.isArray(msg) ? msg[0] : msg);
     } finally {
       setLoading(false);

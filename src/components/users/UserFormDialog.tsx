@@ -36,9 +36,11 @@ export default function UserFormDialog({
 
     useEffect(() => {
         if (open) {
+            /* eslint-disable react-hooks/set-state-in-effect */
             setNombreUsuario(initial?.nombre_usuario || "");
             setRol(initial?.rol || "");
             setPassword("");
+            /* eslint-enable react-hooks/set-state-in-effect */
         }
     }, [open, initial]);
 

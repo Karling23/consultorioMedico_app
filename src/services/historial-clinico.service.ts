@@ -21,6 +21,17 @@ export type PaginatedResult<T> = {
     };
 };
 
+type RawHistorialClinico = {
+    _id?: string;
+    id?: string;
+    id_cita?: number | string;
+    diagnostico?: string;
+    tratamiento?: string;
+    observaciones?: string;
+    createdAt?: string;
+    updatedAt?: string;
+};
+
 export async function getHistorialClinico(params?: {
     page?: number;
     limit?: number;
@@ -31,11 +42,13 @@ export async function getHistorialClinico(params?: {
 }): Promise<PaginatedResult<HistorialClinicoDto>> {
     const { data } = await api.get("/historial-clinico", { params });
     const payload = data?.data ?? data;
-    const items = Array.isArray(payload?.items) ? payload.items : [];
+    const items = Array.isArray(payload?.items)
+        ? (payload.items as RawHistorialClinico[])
+        : [];
     const meta = payload?.meta ?? {};
 
     return {
-        items: items.map((h: any) => ({
+        items: items.map((h) => ({
             id: h._id ?? h.id,
             id_cita: Number(h.id_cita),
             diagnostico: h.diagnostico,

@@ -7,10 +7,8 @@ import {
   Stack,
   TextField,
 } from "@mui/material";
-import { useState, type JSX } from "react";
-import { useEffect, useState, type JSX, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent, type JSX } from "react";
 import { type MedicamentoDto } from "../../services/medicamentos.service";
-
 
 type Props = {
   open: boolean;
@@ -32,19 +30,21 @@ export default function MedicamentoFormDialog({
   onClose,
   onSubmit,
 }: Props): JSX.Element {
-  const [nombre, setNombre] = useState(initial?.nombre || "");
-  const [descripcion, setDescripcion] = useState(initial?.descripcion || "");
+  const [nombre, setNombre] = useState("");
+  const [descripcion, setDescripcion] = useState("");
   const [precio, setPrecio] = useState<number>(0);
   const [stock, setStock] = useState<number>(0);
 
-  const handleSubmit = (e: React.FormEvent) => {
   useEffect(() => {
-    if (open) {
-      setNombre(initial?.nombre || "");
-      setDescripcion(initial?.descripcion || "");
-      setPrecio(typeof initial?.precio === "number" ? initial.precio : Number(initial?.precio ?? 0));
-      setStock(typeof initial?.stock === "number" ? initial.stock : Number(initial?.stock ?? 0));
-    }
+    if (!open) return;
+    /* eslint-disable react-hooks/set-state-in-effect */
+    setNombre(initial?.nombre || "");
+    setDescripcion(initial?.descripcion || "");
+    setPrecio(
+      typeof initial?.precio === "number" ? initial.precio : Number(initial?.precio ?? 0)
+    );
+    setStock(typeof initial?.stock === "number" ? initial.stock : Number(initial?.stock ?? 0));
+    /* eslint-enable react-hooks/set-state-in-effect */
   }, [open, initial]);
 
   const handleSubmit = (e: FormEvent) => {
@@ -58,7 +58,13 @@ export default function MedicamentoFormDialog({
   };
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm" key={`${mode}-${initial?.id ?? "new"}-${open ? "1" : "0"}`}>
+    <Dialog
+      open={open}
+      onClose={onClose}
+      fullWidth
+      maxWidth="sm"
+      key={`${mode}-${initial?.id ?? "new"}-${open ? "1" : "0"}`}
+    >
       <DialogTitle>
         {mode === "create" ? "Nuevo medicamento" : "Editar medicamento"}
       </DialogTitle>

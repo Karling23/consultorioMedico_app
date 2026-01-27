@@ -1,5 +1,4 @@
 import { Avatar, Box, Button, Card, CardActionArea, CardContent, Paper, Stack, Typography } from "@mui/material";
-import { Stack, Typography } from "@mui/material";
 import type { JSX } from "react";
 import CategoryIcon from "@mui/icons-material/Category";
 import LocalHospitalIcon from "@mui/icons-material/LocalHospital";

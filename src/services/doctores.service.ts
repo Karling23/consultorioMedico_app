@@ -2,6 +2,10 @@ import { api } from "./api";
 
 export type DoctorDto = {
   id_doctor: number;
+  id_usuario: number;
+  id_especialidad: number;
+  horario_inicio?: string;
+  horario_fin?: string;
   dias_disponibles: string;
 };
 
@@ -38,6 +42,10 @@ export async function getDoctorById(id: number): Promise<DoctorDto> {
 }
 
 export async function createDoctor(payload: {
+  id_usuario: number;
+  id_especialidad: number;
+  horario_inicio?: string;
+  horario_fin?: string;
   dias_disponibles: string;
 }): Promise<DoctorDto> {
   const { data } = await api.post("/doctores", payload);
@@ -46,7 +54,13 @@ export async function createDoctor(payload: {
 
 export async function updateDoctor(
   id: number,
-  payload: { dias_disponibles?: string }
+  payload: {
+    id_usuario?: number;
+    id_especialidad?: number;
+    horario_inicio?: string;
+    horario_fin?: string;
+    dias_disponibles?: string;
+  }
 ): Promise<DoctorDto> {
   const { data } = await api.patch(`/doctores/${id}`, payload);
   return data;

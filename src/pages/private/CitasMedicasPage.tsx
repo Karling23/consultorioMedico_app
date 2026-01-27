@@ -1,4 +1,4 @@
-import {
+﻿import {
   Alert,
   Box,
   Button,
@@ -17,7 +17,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
@@ -57,7 +57,15 @@ export default function CitasMedicasPage() {
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedCita, setSelectedCita] = useState<CitaMedicaDto | null>(null);
 
-  const fetchData = async () => {
+  type ApiError = {
+    response?: {
+      data?: {
+        message?: string | string[];
+      };
+    };
+  };
+
+  const fetchData = useCallback(async () => {
     setLoading(true);
     try {
       setError(null);
@@ -74,11 +82,11 @@ export default function CitasMedicasPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [page, debouncedSearch]);
 
   useEffect(() => {
     fetchData();
-  }, [page, debouncedSearch]);
+  }, [fetchData]);
 
   const handleDelete = async (id: number) => {
     if (!isAdmin) return;
@@ -88,10 +96,10 @@ export default function CitasMedicasPage() {
       setSuccess(null);
       await deleteCitaMedica(id);
       fetchData();
-      setSuccess("Cita mÃ©dica eliminada del sistema.");
+      setSuccess("Cita médica eliminada del sistema.");
     } catch (error) {
       const msg =
-        (error as any)?.response?.data?.message || "No se pudo eliminar la cita mÃ©dica.";
+        (error as ApiError)?.response?.data?.message || "No se pudo eliminar la cita médica.";
       setError(Array.isArray(msg) ? msg[0] : msg);
     }
   };
@@ -211,7 +219,7 @@ export default function CitasMedicasPage() {
             setOpenDialog(false);
             fetchData();
             setSuccess(
-              selectedCita ? "Cita mÃ©dica actualizada exitosamente." : "Cita mÃ©dica creada exitosamente."
+              selectedCita ? "Cita médica actualizada exitosamente." : "Cita médica creada exitosamente."
             );
           }}
           initialData={selectedCita}

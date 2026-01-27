@@ -8,6 +8,7 @@ import {
   DialogContent,
   DialogTitle,
   Stack,
+  MenuItem,
   TextField,
 } from "@mui/material";
 import {
@@ -15,6 +16,12 @@ import {
   updateDoctoresConsultorio,
   type DoctoresConsultorioDto,
 } from "../../services/doctores-consultorios.service";
+import { getDoctores, type DoctorDto } from "../../services/doctores.service";
+import {
+  getConsultorios,
+  type ConsultorioDto,
+  type PaginatedConsultorios,
+} from "../../services/consultorios.service";
 
 interface Props {
   open: boolean;
@@ -34,6 +41,8 @@ export function DoctoresConsultoriosFormDialog({
   const [idDoctor, setIdDoctor] = useState<number | "">("");
   const [idConsultorio, setIdConsultorio] = useState<number | "">("");
   const isEditMode = !!initialData;
+  const [doctores, setDoctores] = useState<DoctorDto[]>([]);
+  const [consultorios, setConsultorios] = useState<ConsultorioDto[]>([]);
 
   useEffect(() => {
     if (open) {
@@ -42,6 +51,25 @@ export function DoctoresConsultoriosFormDialog({
       setIdConsultorio(initialData?.id_consultorio ?? "");
     }
   }, [open, initialData]);
+
+  useEffect(() => {
+    if (!open) return;
+    (async () => {
+      try {
+        const [doctoresRes, consultoriosRes] = await Promise.all([
+          getDoctores({ page: 1, limit: 100 }),
+          getConsultorios({ page: 1, limit: 100 }),
+        ]);
+        setDoctores(doctoresRes.items);
+        setConsultorios(
+          (consultoriosRes as PaginatedConsultorios<ConsultorioDto>).items ?? []
+        );
+      } catch {
+        setDoctores([]);
+        setConsultorios([]);
+      }
+    })();
+  }, [open]);
 
   const onSubmit = async () => {
     if (idDoctor === "" || idConsultorio === "") {
@@ -89,20 +117,34 @@ export function DoctoresConsultoriosFormDialog({
         <Stack spacing={2}>
           <TextField
             fullWidth
-            label="ID Doctor"
-            type="number"
+            select
+            label="Doctor"
             value={idDoctor}
             onChange={(e) => setIdDoctor(e.target.value === "" ? "" : Number(e.target.value))}
             required
-          />
+          >
+            <MenuItem value="">Selecciona un doctor</MenuItem>
+            {doctores.map((d) => (
+              <MenuItem key={d.id_doctor} value={d.id_doctor}>
+                #{d.id_doctor} - {d.dias_disponibles}
+              </MenuItem>
+            ))}
+          </TextField>
           <TextField
             fullWidth
-            label="ID Consultorio"
-            type="number"
+            select
+            label="Consultorio"
             value={idConsultorio}
             onChange={(e) => setIdConsultorio(e.target.value === "" ? "" : Number(e.target.value))}
             required
-          />
+          >
+            <MenuItem value="">Selecciona un consultorio</MenuItem>
+            {consultorios.map((c) => (
+              <MenuItem key={c.id_consultorio} value={c.id_consultorio}>
+                #{c.id_consultorio} - {c.nombre}
+              </MenuItem>
+            ))}
+          </TextField>
         </Stack>
       </DialogContent>
       <DialogActions>

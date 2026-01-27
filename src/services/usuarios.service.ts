@@ -19,6 +19,14 @@ export type PaginatedResult<T> = {
     };
 };
 
+type RawUsuario = {
+    id_usuario?: number;
+    nombre_usuario?: string;
+    rol?: string;
+    fecha_creacion?: string;
+    profile?: string | null;
+};
+
 export async function getUsuarios(params?: {
     page?: number;
     limit?: number;
@@ -27,11 +35,11 @@ export async function getUsuarios(params?: {
     const { data } = await api.get("/usuarios", { params });
 
     const payload = data?.data ?? data;
-    const items = Array.isArray(payload?.items) ? payload.items : [];
+    const items = Array.isArray(payload?.items) ? (payload.items as RawUsuario[]) : [];
     const meta = payload?.meta ?? {};
 
     return {
-        items: items.map((u: any) => ({
+        items: items.map((u) => ({
             id_usuario: u.id_usuario,
             nombre_usuario: u.nombre_usuario,
             rol: u.rol,

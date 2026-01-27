@@ -43,8 +43,8 @@ export default function MedicamentoPublicDetail(): JSX.Element {
         return (
         <Stack spacing={2}>
             <Typography variant="h5">Medicamento no encontrado</Typography>
-            <Button variant="contained" component={RouterLink} to="/medicamentos">
-            Volver al listado
+            <Button variant="contained" component={RouterLink} to="/">
+            Volver al inicio
             </Button>
         </Stack>
         );
@@ -54,7 +54,7 @@ export default function MedicamentoPublicDetail(): JSX.Element {
         <Button
             variant="outlined"
             component={RouterLink}
-            to="/medicamentos"
+            to="/"
             sx={{ width: "fit-content" }}
         >
             ← Volver

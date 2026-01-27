@@ -7,6 +7,7 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  MenuItem,
   Stack,
   TextField,
 } from "@mui/material";
@@ -15,6 +16,10 @@ import {
   updateReceta,
   type RecetaDto,
 } from "../../services/recetas.service";
+import {
+  getHistorialClinico,
+  type HistorialClinicoDto,
+} from "../../services/historial-clinico.service";
 
 interface Props {
   open: boolean;
@@ -31,25 +36,51 @@ export function RecetasFormDialog({
 }: Props) {
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [descripcion, setDescripcion] = useState("");
+  const [idHistorial, setIdHistorial] = useState<number | "">("");
+  const [fechaEmision, setFechaEmision] = useState("");
+  const [historialItems, setHistorialItems] = useState<HistorialClinicoDto[]>([]);
 
   const isEditMode = !!initialData;
 
   useEffect(() => {
     if (open) {
       setErrorMessage(null);
-      setDescripcion("");
+      setIdHistorial(initialData?.id_historial ?? "");
+      setFechaEmision(initialData?.fecha_emision || "");
     }
   }, [open, initialData]);
+
+  useEffect(() => {
+    if (!open) return;
+    (async () => {
+      try {
+        const res = await getHistorialClinico({ page: 1, limit: 100 });
+        setHistorialItems(res.items);
+      } catch {
+        setHistorialItems([]);
+      }
+    })();
+  }, [open]);
 
   const onSubmit = async () => {
     setLoading(true);
     setErrorMessage(null);
     try {
+      if (idHistorial === "") {
+        setErrorMessage("Selecciona un historial clínico.");
+        setLoading(false);
+        return;
+      }
       if (isEditMode && initialData) {
-        await updateReceta(initialData.id_receta, { descripcion });
+        await updateReceta(initialData.id_receta, {
+          id_historial: Number(idHistorial),
+          fecha_emision: fechaEmision || undefined,
+        });
       } else {
-        await createReceta({ descripcion });
+        await createReceta({
+          id_historial: Number(idHistorial),
+          fecha_emision: fechaEmision || undefined,
+        });
       }
       onSuccess();
     } catch (err: unknown) {
@@ -78,12 +109,27 @@ export function RecetasFormDialog({
         <Stack spacing={2}>
           <TextField
             fullWidth
-            label="DescripciÃ³n"
-            value={descripcion}
-            onChange={(e) => setDescripcion(e.target.value)}
-            multiline
-            rows={3}
+            select
+            label="Historial clínico"
+            value={idHistorial}
+            onChange={(e) => setIdHistorial(e.target.value === "" ? "" : Number(e.target.value))}
             required
+          >
+            <MenuItem value="">Selecciona un historial</MenuItem>
+            {historialItems.map((h) => (
+              <MenuItem key={h.id} value={Number(h.id)}>
+                #{h.id} - {h.diagnostico}
+              </MenuItem>
+            ))}
+          </TextField>
+
+          <TextField
+            fullWidth
+            label="Fecha de emisión"
+            type="date"
+            value={fechaEmision}
+            onChange={(e) => setFechaEmision(e.target.value)}
+            InputLabelProps={{ shrink: true }}
           />
         </Stack>
       </DialogContent>
@@ -94,7 +140,7 @@ export function RecetasFormDialog({
         <Button
           onClick={onSubmit}
           variant="contained"
-          disabled={loading || !descripcion.trim()}
+          disabled={loading || idHistorial === ""}
           startIcon={loading ? <CircularProgress size={20} /> : null}
         >
           {isEditMode ? "Actualizar" : "Guardar"}

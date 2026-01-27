@@ -1,13 +1,11 @@
-import {
+﻿import {
     Alert,
     Button,
     CircularProgress,
     IconButton,
     Tooltip,
     Pagination,
-    Paper,
-    Snackbar,
-    Stack,
+    Paper,    Stack,
     Table,
     TableBody,
     TableCell,
@@ -65,8 +63,6 @@ export default function MedicamentosPage(): JSX.Element {
     const [open, setOpen] = useState(false);
     const [mode, setMode] = useState<"create" | "edit">("create");
     const [current, setCurrent] = useState<MedicamentoDto | null>(null);
-    const [snackbarOpen, setSnackbarOpen] = useState(false);
-    const [snackbarMsg, setSnackbarMsg] = useState("");
 
     const isAdmin = (user?.rol || "").toLowerCase() === "admin";
 
@@ -158,8 +154,6 @@ export default function MedicamentosPage(): JSX.Element {
             setOpen(false);
             setPage(1);
             await load();
-            setSnackbarMsg("Medicamento creado");
-            setSnackbarOpen(true);
             setSuccess("Medicamento creado exitosamente.");
             return;
         }
@@ -169,8 +163,6 @@ export default function MedicamentosPage(): JSX.Element {
         await updateMedicamento(current.id, payload);
         setOpen(false);
         await load();
-        setSnackbarMsg("Medicamento actualizado");
-        setSnackbarOpen(true);
         setSuccess("Medicamento actualizado exitosamente.");
         } catch {
         setError("No se pudo guardar el medicamento.");
@@ -187,8 +179,6 @@ export default function MedicamentosPage(): JSX.Element {
         }
         await deleteMedicamento(id);
         await load();
-        setSnackbarMsg("Medicamento eliminado");
-        setSnackbarOpen(true);
         setSuccess("Medicamento eliminado del sistema.");
         } catch {
         setError("No se pudo eliminar el medicamento.");
@@ -233,14 +223,15 @@ export default function MedicamentosPage(): JSX.Element {
                 <Table size="small" sx={{ "& tbody tr:hover": { bgcolor: "action.hover" } }}>
                 <TableHead sx={{ bgcolor: "grey.100" }}>
                     <TableRow>
-                    <TableCell sx={{ fontWeight: 600 }}>Nombre</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }}>Descripción</TableCell>
-                    <TableCell align="right" sx={{ fontWeight: 600 }}>Acciones</TableCell>
-                    <TableCell>Nombre</TableCell>
-                    <TableCell>Descripción</TableCell>
-                    <TableCell>Precio</TableCell>
-                    <TableCell>Stock</TableCell>
-                    {isAdmin && <TableCell align="right">Acciones</TableCell>}
+                      <TableCell sx={{ fontWeight: 600 }}>Nombre</TableCell>
+                      <TableCell sx={{ fontWeight: 600 }}>Descripci�n</TableCell>
+                      <TableCell sx={{ fontWeight: 600 }}>Precio</TableCell>
+                      <TableCell sx={{ fontWeight: 600 }}>Stock</TableCell>
+                      {isAdmin && (
+                        <TableCell align="right" sx={{ fontWeight: 600 }}>
+                          Acciones
+                        </TableCell>
+                      )}
                     </TableRow>
                 </TableHead>
 
@@ -249,29 +240,21 @@ export default function MedicamentosPage(): JSX.Element {
                     <TableRow key={m.id}>
                         <TableCell>{m.nombre}</TableCell>
                         <TableCell>{m.descripcion || "-"}</TableCell>
-                        <TableCell align="right">
-                        <Tooltip title="Editar">
-                            <IconButton onClick={() => onEdit(m)} color="primary">
-                            <EditIcon />
-                            </IconButton>
-                        </Tooltip>
-                        <Tooltip title="Eliminar">
-                            <IconButton onClick={() => onDelete(m.id)} color="error">
-                            <DeleteIcon />
-                            </IconButton>
-                        </Tooltip>
-                        </TableCell>
                         <TableCell>{typeof m.precio === "number" ? m.precio.toFixed(2) : "-"}</TableCell>
                         <TableCell>{m.stock ?? "-"}</TableCell>
                         {isAdmin && (
-                            <TableCell align="right">
-                            <IconButton onClick={() => onEdit(m)}>
+                          <TableCell align="right">
+                            <Tooltip title="Editar">
+                              <IconButton onClick={() => onEdit(m)} color="primary">
                                 <EditIcon />
-                            </IconButton>
-                            <IconButton onClick={() => onDelete(m.id)}>
+                              </IconButton>
+                            </Tooltip>
+                            <Tooltip title="Eliminar">
+                              <IconButton onClick={() => onDelete(m.id)} color="error">
                                 <DeleteIcon />
-                            </IconButton>
-                            </TableCell>
+                              </IconButton>
+                            </Tooltip>
+                          </TableCell>
                         )}
                     </TableRow>
                     ))}
@@ -295,13 +278,6 @@ export default function MedicamentosPage(): JSX.Element {
             initial={current}
             onClose={() => setOpen(false)}
             onSubmit={onSubmit}
-        />
-        <Snackbar
-            open={snackbarOpen}
-            autoHideDuration={3000}
-            onClose={() => setSnackbarOpen(false)}
-            message={snackbarMsg}
-            anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
         />
         </Stack>
     );

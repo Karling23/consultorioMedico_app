@@ -18,6 +18,14 @@ import {
   updateCitaMedica,
 } from "../../services/citas-medicas.service";
 
+type ApiError = {
+  response?: {
+    data?: {
+      message?: string | string[];
+    };
+  };
+};
+
 interface Props {
   open: boolean;
   onClose: () => void;
@@ -52,7 +60,16 @@ export const CitasMedicasFormDialog = ({
       setIdConsultorio(Number(initialData.id_consultorio));
       setFechaCita(initialData.fecha_cita);
       setHoraCita(initialData.hora_cita);
-      setEstado((initialData.estado as any) || "Pendiente");
+      const nextEstado = initialData.estado;
+      if (
+        nextEstado === "Pendiente" ||
+        nextEstado === "Confirmada" ||
+        nextEstado === "Cancelada"
+      ) {
+        setEstado(nextEstado);
+      } else {
+        setEstado("Pendiente");
+      }
       setMotivo(initialData.motivo || "");
     } else {
       setIdPaciente(0);
@@ -77,7 +94,7 @@ export const CitasMedicasFormDialog = ({
         return;
       }
 
-      const payload = {
+      const payload: Partial<CitaMedicaDto> = {
         id_paciente: Number(idPaciente),
         id_doctor: Number(idDoctor),
         id_consultorio: Number(idConsultorio),
@@ -85,7 +102,7 @@ export const CitasMedicasFormDialog = ({
         hora_cita: horaCita,
         estado,
         motivo: motivo || undefined,
-      } as any;
+      };
 
       if (isEditMode && initialData) {
         await updateCitaMedica(initialData.id_cita, payload);
@@ -94,8 +111,9 @@ export const CitasMedicasFormDialog = ({
       }
 
       onSuccess();
-    } catch (error: any) {
-      const msg = error?.response?.data?.message || "Error al guardar la cita medica";
+    } catch (error) {
+      const msg =
+        (error as ApiError)?.response?.data?.message || "Error al guardar la cita medica";
       setErrorMessage(Array.isArray(msg) ? msg[0] : msg);
     } finally {
       setLoading(false);

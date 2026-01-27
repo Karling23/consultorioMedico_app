@@ -29,12 +29,12 @@ export type DoctoresConsultoriosQueryParams = {
 export async function getDoctoresConsultorios(
   params?: DoctoresConsultoriosQueryParams
 ): Promise<PaginatedDoctoresConsultorios<DoctoresConsultorioDto>> {
-  const { data } = await api.get("/doctores-consultorios", { params });
+  const { data } = await api.get("/doctoresConsultorios", { params });
   return data;
 }
 
 export async function getDoctoresConsultorioById(id: number): Promise<DoctoresConsultorioDto> {
-  const { data } = await api.get(`/doctores-consultorios/${id}`);
+  const { data } = await api.get(`/doctoresConsultorios/${id}`);
   return data;
 }
 
@@ -42,7 +42,7 @@ export async function createDoctoresConsultorio(payload: {
   id_doctor: number;
   id_consultorio: number;
 }): Promise<DoctoresConsultorioDto> {
-  const { data } = await api.post("/doctores-consultorios", payload);
+  const { data } = await api.post("/doctoresConsultorios", payload);
   return data;
 }
 
@@ -50,10 +50,10 @@ export async function updateDoctoresConsultorio(
   id: number,
   payload: { id_doctor?: number; id_consultorio?: number }
 ): Promise<DoctoresConsultorioDto> {
-  const { data } = await api.patch(`/doctores-consultorios/${id}`, payload);
+  const { data } = await api.patch(`/doctoresConsultorios/${id}`, payload);
   return data;
 }
 
 export async function deleteDoctoresConsultorio(id: number): Promise<void> {
-  await api.delete(`/doctores-consultorios/${id}`);
+  await api.delete(`/doctoresConsultorios/${id}`);
 }

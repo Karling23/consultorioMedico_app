@@ -37,10 +37,12 @@ export default function HistorialClinicoFormDialog({
 
     useEffect(() => {
         if (open) {
+            /* eslint-disable react-hooks/set-state-in-effect */
             setIdCita(Number(initial?.id_cita ?? 0));
             setDiagnostico(initial?.diagnostico || "");
             setTratamiento(initial?.tratamiento || "");
             setObservaciones(initial?.observaciones || "");
+            /* eslint-enable react-hooks/set-state-in-effect */
         }
     }, [open, initial]);
 

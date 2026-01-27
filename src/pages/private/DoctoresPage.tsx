@@ -1,4 +1,5 @@
 import {
+  Alert,
   Box,
   Button,
   CircularProgress,
@@ -7,7 +8,6 @@ import {
   Tooltip,
   Pagination,
   Paper,
-  Snackbar,
   Stack,
   Table,
   TableBody,
@@ -22,6 +22,7 @@ import { useCallback, useEffect, useState } from "react";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
+import { useAuth } from "../../context/AuthContext";
 import {
   deleteDoctor,
   getDoctores,
@@ -40,20 +41,23 @@ function useDebouncedValue<T>(value: T, delay: number): T {
 }
 
 export default function DoctoresPage() {
+  const { user } = useAuth();
+  const isAdmin = (user?.rol || "").toLowerCase() === "admin";
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebouncedValue(search, 500);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
   const [data, setData] = useState<PaginatedDoctores<DoctorDto> | null>(null);
   const [openDialog, setOpenDialog] = useState(false);
   const [selected, setSelected] = useState<DoctorDto | null>(null);
-  const [snackbarOpen, setSnackbarOpen] = useState(false);
-  const [snackbarMsg, setSnackbarMsg] = useState("");
 
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
+      setError(null);
       const result = await getDoctores({
         page,
         limit: 10,
@@ -62,6 +66,7 @@ export default function DoctoresPage() {
       });
       setData(result);
     } catch (error) {
+      setError("No se pudieron cargar los doctores.");
       console.error("Error cargando doctores", error);
     } finally {
       setLoading(false);
@@ -73,23 +78,38 @@ export default function DoctoresPage() {
   }, [fetchData]);
 
   const handleDelete = async (id: number) => {
-    if (!confirm("Â¿Eliminar este doctor?")) return;
+    if (!isAdmin) {
+      setError("No tienes permisos para eliminar doctores.");
+      return;
+    }
+    if (!confirm("¿Eliminar este doctor?")) return;
     try {
+      setError(null);
+      setSuccess(null);
       await deleteDoctor(id);
       fetchData();
-      setSnackbarMsg("Doctor eliminado");
-      setSnackbarOpen(true);
+      setSuccess("Doctor eliminado del sistema.");
     } catch {
-      alert("Error al eliminar");
+      setError("No se pudo eliminar el doctor.");
     }
   };
 
   const handleCreate = () => {
+    if (!isAdmin) {
+      setError("No tienes permisos para crear doctores.");
+      return;
+    }
+    setSuccess(null);
     setSelected(null);
     setOpenDialog(true);
   };
 
   const handleEdit = (row: DoctorDto) => {
+    if (!isAdmin) {
+      setError("No tienes permisos para editar doctores.");
+      return;
+    }
+    setSuccess(null);
     setSelected(row);
     setOpenDialog(true);
   };
@@ -98,16 +118,18 @@ export default function DoctoresPage() {
     <Container maxWidth="lg" sx={{ mt: 4 }}>
       <Stack direction="row" justifyContent="space-between" alignItems="center" mb={3}>
         <Typography variant="h4">Doctores</Typography>
-        <Button variant="contained" startIcon={<AddIcon />} onClick={handleCreate}>
-          Nuevo Doctor
-        </Button>
+        {isAdmin && (
+          <Button variant="contained" startIcon={<AddIcon />} onClick={handleCreate}>
+            Nuevo Doctor
+          </Button>
+        )}
       </Stack>
 
       <Paper sx={{ p: 2, mb: 3 }}>
         <TextField
           fullWidth
           variant="outlined"
-          placeholder="Buscar por dÃ­as disponibles..."
+          placeholder="Buscar por días disponibles..."
           value={search}
           onChange={(e) => {
             setSearch(e.target.value);
@@ -115,6 +137,9 @@ export default function DoctoresPage() {
           }}
         />
       </Paper>
+
+      {error && <Alert severity="error">{error}</Alert>}
+      {success && <Alert severity="success">{success}</Alert>}
 
       {loading ? (
         <Box display="flex" justifyContent="center" p={4}>
@@ -126,32 +151,46 @@ export default function DoctoresPage() {
             <TableHead sx={{ bgcolor: "grey.100" }}>
               <TableRow>
                 <TableCell sx={{ fontWeight: 600 }}>ID</TableCell>
-                <TableCell sx={{ fontWeight: 600 }}>DÃ­as disponibles</TableCell>
-                <TableCell align="right" sx={{ fontWeight: 600 }}>Acciones</TableCell>
+                <TableCell sx={{ fontWeight: 600 }}>ID Usuario</TableCell>
+                <TableCell sx={{ fontWeight: 600 }}>ID Especialidad</TableCell>
+                <TableCell sx={{ fontWeight: 600 }}>Horario inicio</TableCell>
+                <TableCell sx={{ fontWeight: 600 }}>Horario fin</TableCell>
+                <TableCell sx={{ fontWeight: 600 }}>Días disponibles</TableCell>
+                {isAdmin && (
+                  <TableCell align="right" sx={{ fontWeight: 600 }}>
+                    Acciones
+                  </TableCell>
+                )}
               </TableRow>
             </TableHead>
             <TableBody>
               {data?.items.map((row) => (
                 <TableRow key={row.id_doctor}>
                   <TableCell>{row.id_doctor}</TableCell>
-                  <TableCell>{row.dias_disponibles}</TableCell>
-                  <TableCell align="right">
-                    <Tooltip title="Editar">
-                      <IconButton color="primary" onClick={() => handleEdit(row)}>
-                        <EditIcon />
-                      </IconButton>
-                    </Tooltip>
-                    <Tooltip title="Eliminar">
-                      <IconButton color="error" onClick={() => handleDelete(row.id_doctor)}>
-                        <DeleteIcon />
-                      </IconButton>
-                    </Tooltip>
-                  </TableCell>
+                  <TableCell>{row.id_usuario}</TableCell>
+                  <TableCell>{row.id_especialidad}</TableCell>
+                  <TableCell>{row.horario_inicio || "-"}</TableCell>
+                  <TableCell>{row.horario_fin || "-"}</TableCell>
+                  <TableCell>{row.dias_disponibles || "-"}</TableCell>
+                  {isAdmin && (
+                    <TableCell align="right">
+                      <Tooltip title="Editar">
+                        <IconButton color="primary" onClick={() => handleEdit(row)}>
+                          <EditIcon />
+                        </IconButton>
+                      </Tooltip>
+                      <Tooltip title="Eliminar">
+                        <IconButton color="error" onClick={() => handleDelete(row.id_doctor)}>
+                          <DeleteIcon />
+                        </IconButton>
+                      </Tooltip>
+                    </TableCell>
+                  )}
                 </TableRow>
               ))}
               {data?.items.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={3} align="center">
+                  <TableCell colSpan={isAdmin ? 7 : 6} align="center">
                     No se encontraron doctores.
                   </TableCell>
                 </TableRow>
@@ -179,19 +218,13 @@ export default function DoctoresPage() {
           onSuccess={() => {
             setOpenDialog(false);
             fetchData();
-            setSnackbarMsg("Doctor guardado");
-            setSnackbarOpen(true);
+            setSuccess(
+              selected ? "Doctor actualizado exitosamente." : "Doctor creado exitosamente."
+            );
           }}
           initialData={selected}
         />
       )}
-      <Snackbar
-        open={snackbarOpen}
-        autoHideDuration={3000}
-        onClose={() => setSnackbarOpen(false)}
-        message={snackbarMsg}
-        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-      />
     </Container>
   );
 }

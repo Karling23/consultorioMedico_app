@@ -2,6 +2,8 @@ import { api } from "./api";
 
 export type RecetaDto = {
   id_receta: number;
+  id_historial: number;
+  fecha_emision?: string;
 };
 
 export type PaginatedRecetas<T> = {
@@ -36,12 +38,21 @@ export async function getRecetaById(id: number): Promise<RecetaDto> {
   return data;
 }
 
-export async function createReceta(payload: Record<string, unknown>): Promise<RecetaDto> {
+export async function createReceta(payload: {
+  id_historial: number;
+  fecha_emision?: string;
+}): Promise<RecetaDto> {
   const { data } = await api.post("/recetas", payload);
   return data;
 }
 
-export async function updateReceta(id: number, payload: Record<string, unknown>): Promise<RecetaDto> {
+export async function updateReceta(
+  id: number,
+  payload: {
+    id_historial?: number;
+    fecha_emision?: string;
+  }
+): Promise<RecetaDto> {
   const { data } = await api.patch(`/recetas/${id}`, payload);
   return data;
 }

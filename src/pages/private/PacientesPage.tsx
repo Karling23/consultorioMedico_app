@@ -1,7 +1,7 @@
 import {Alert,Box,Button,CircularProgress,Container,IconButton,Pagination,Paper,Stack,Table,TableBody,
 TableCell,TableContainer,TableHead,TableRow,TextField,
 Typography,} from "@mui/material";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
@@ -37,7 +37,15 @@ export default function PacientesPage() {
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedPaciente, setSelectedPaciente] = useState<PacienteDto | null>(null);
 
-  const fetchData = async () => {
+  type ApiError = {
+    response?: {
+      data?: {
+        message?: string | string[];
+      };
+    };
+  };
+
+  const fetchData = useCallback(async () => {
     setLoading(true);
     try {
       setError(null);
@@ -54,11 +62,11 @@ export default function PacientesPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [page, debouncedSearch]);
 
   useEffect(() => {
     fetchData();
-  }, [page, debouncedSearch]);
+  }, [fetchData]);
 
   const handleDelete = async (id: number) => {
     if (!isAdmin) return;
@@ -71,7 +79,7 @@ export default function PacientesPage() {
       setSuccess("Paciente eliminado del sistema.");
     } catch (error) {
       const msg =
-        (error as any)?.response?.data?.message || "No se pudo eliminar el paciente.";
+        (error as ApiError)?.response?.data?.message || "No se pudo eliminar el paciente.";
       setError(Array.isArray(msg) ? msg[0] : msg);
     }
   };

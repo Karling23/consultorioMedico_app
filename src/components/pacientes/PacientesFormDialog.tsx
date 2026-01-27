@@ -17,6 +17,14 @@ import {
   type PacienteDto,
 } from "../../services/pacientes.service";
 
+type ApiError = {
+  response?: {
+    data?: {
+      message?: string | string[];
+    };
+  };
+};
+
 interface Props {
   open: boolean;
   onClose: () => void;
@@ -109,8 +117,9 @@ export const PacientesFormDialog = ({
         await createPaciente(payload);
       }
       onSuccess();
-    } catch (error: any) {
-      const msg = error.response?.data?.message || "Error al guardar el paciente";
+    } catch (error) {
+      const msg =
+        (error as ApiError)?.response?.data?.message || "Error al guardar el paciente";
       setErrorMessage(Array.isArray(msg) ? msg[0] : msg);
     } finally {
       setLoading(false);
