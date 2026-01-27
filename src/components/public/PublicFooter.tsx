@@ -25,7 +25,7 @@ export default function PublicFooter(): JSX.Element {
         color="text.secondary"
         sx={{ width: "100%", textAlign: "center" }}
       >
-        © 2025 BlogApp | Todos los derechos reservados
+        © 2026 VitaCare | Todos los derechos reservados
       </Typography>
     </Box>
   );

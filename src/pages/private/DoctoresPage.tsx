@@ -4,8 +4,10 @@ import {
   CircularProgress,
   Container,
   IconButton,
+  Tooltip,
   Pagination,
   Paper,
+  Snackbar,
   Stack,
   Table,
   TableBody,
@@ -16,23 +18,18 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
-
-// Importamos usando 'type' para evitar errores
 import {
-  deletePaciente,
-  getPacientes,
-  type PacienteDto,
-  type PaginatedPacientes,
-} from "../../services/pacientes.service";
+  deleteDoctor,
+  getDoctores,
+  type DoctorDto,
+  type PaginatedDoctores,
+} from "../../services/doctores.service";
+import { DoctoresFormDialog } from "../../components/doctores/DoctoresFormDialog";
 
-// IMPORTANTE: Este componente lo crearemos en el Paso 4.
-import { PacientesFormDialog } from "../../components/pacientes/PacientesFormDialog";
-
-// Helper simple para debounce
 function useDebouncedValue<T>(value: T, delay: number): T {
   const [debouncedValue, setDebouncedValue] = useState(value);
   useEffect(() => {
@@ -42,62 +39,67 @@ function useDebouncedValue<T>(value: T, delay: number): T {
   return debouncedValue;
 }
 
-export default function PacientesPage() {
+export default function DoctoresPage() {
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebouncedValue(search, 500);
   const [loading, setLoading] = useState(false);
-  
-  const [data, setData] = useState<PaginatedPacientes<PacienteDto> | null>(null);
-  const [openDialog, setOpenDialog] = useState(false);
-  const [selectedPaciente, setSelectedPaciente] = useState<PacienteDto | null>(null);
 
-  const fetchData = async () => {
+  const [data, setData] = useState<PaginatedDoctores<DoctorDto> | null>(null);
+  const [openDialog, setOpenDialog] = useState(false);
+  const [selected, setSelected] = useState<DoctorDto | null>(null);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMsg, setSnackbarMsg] = useState("");
+
+  const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const result = await getPacientes({
+      const result = await getDoctores({
         page,
         limit: 10,
-        search: debouncedSearch,
+        search: debouncedSearch || undefined,
+        searchField: debouncedSearch ? "dias_disponibles" : undefined,
       });
       setData(result);
     } catch (error) {
-      console.error("Error cargando pacientes", error);
+      console.error("Error cargando doctores", error);
     } finally {
       setLoading(false);
     }
-  };
+  }, [page, debouncedSearch]);
 
   useEffect(() => {
     fetchData();
-  }, [page, debouncedSearch]);
+  }, [fetchData]);
 
   const handleDelete = async (id: number) => {
-    if (!confirm("¿Estás seguro de eliminar este paciente?")) return;
+    if (!confirm("¿Eliminar este doctor?")) return;
     try {
-      await deletePaciente(id);
+      await deleteDoctor(id);
       fetchData();
-    } catch (error) {
+      setSnackbarMsg("Doctor eliminado");
+      setSnackbarOpen(true);
+    } catch {
       alert("Error al eliminar");
     }
   };
 
   const handleCreate = () => {
-    setSelectedPaciente(null);
+    setSelected(null);
     setOpenDialog(true);
   };
 
-  const handleEdit = (paciente: PacienteDto) => {
-    setSelectedPaciente(paciente);
+  const handleEdit = (row: DoctorDto) => {
+    setSelected(row);
     setOpenDialog(true);
   };
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4 }}>
       <Stack direction="row" justifyContent="space-between" alignItems="center" mb={3}>
-        <Typography variant="h4">Gestión de Pacientes</Typography>
+        <Typography variant="h4">Doctores</Typography>
         <Button variant="contained" startIcon={<AddIcon />} onClick={handleCreate}>
-          Nuevo Paciente
+          Nuevo Doctor
         </Button>
       </Stack>
 
@@ -105,7 +107,7 @@ export default function PacientesPage() {
         <TextField
           fullWidth
           variant="outlined"
-          placeholder="Buscar por cédula..."
+          placeholder="Buscar por días disponibles..."
           value={search}
           onChange={(e) => {
             setSearch(e.target.value);
@@ -119,44 +121,44 @@ export default function PacientesPage() {
           <CircularProgress />
         </Box>
       ) : (
-        <TableContainer component={Paper}>
-          <Table>
-            <TableHead>
+        <TableContainer component={Paper} variant="outlined">
+          <Table size="small" sx={{ "& tbody tr:hover": { bgcolor: "action.hover" } }}>
+            <TableHead sx={{ bgcolor: "grey.100" }}>
               <TableRow>
-                <TableCell>ID</TableCell>
-                <TableCell>Cédula</TableCell>
-                <TableCell>Teléfono</TableCell>
-                <TableCell>Dirección</TableCell>
-                <TableCell align="right">Acciones</TableCell>
+                <TableCell sx={{ fontWeight: 600 }}>ID</TableCell>
+                <TableCell sx={{ fontWeight: 600 }}>Días disponibles</TableCell>
+                <TableCell align="right" sx={{ fontWeight: 600 }}>Acciones</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {data?.items.map((paciente) => (
-                <TableRow key={paciente.id_paciente}>
-                  <TableCell>{paciente.id_paciente}</TableCell>
-                  <TableCell>{paciente.cedula}</TableCell>
-                  <TableCell>{paciente.telefono}</TableCell>
-                  <TableCell>{paciente.direccion}</TableCell>
+              {data?.items.map((row) => (
+                <TableRow key={row.id_doctor}>
+                  <TableCell>{row.id_doctor}</TableCell>
+                  <TableCell>{row.dias_disponibles}</TableCell>
                   <TableCell align="right">
-                    <IconButton color="primary" onClick={() => handleEdit(paciente)}>
-                      <EditIcon />
-                    </IconButton>
-                    <IconButton color="error" onClick={() => handleDelete(paciente.id_paciente)}>
-                      <DeleteIcon />
-                    </IconButton>
+                    <Tooltip title="Editar">
+                      <IconButton color="primary" onClick={() => handleEdit(row)}>
+                        <EditIcon />
+                      </IconButton>
+                    </Tooltip>
+                    <Tooltip title="Eliminar">
+                      <IconButton color="error" onClick={() => handleDelete(row.id_doctor)}>
+                        <DeleteIcon />
+                      </IconButton>
+                    </Tooltip>
                   </TableCell>
                 </TableRow>
               ))}
               {data?.items.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={5} align="center">
-                    No se encontraron pacientes.
+                  <TableCell colSpan={3} align="center">
+                    No se encontraron doctores.
                   </TableCell>
                 </TableRow>
               )}
             </TableBody>
           </Table>
-          
+
           {data && (
             <Box display="flex" justifyContent="center" py={2}>
               <Pagination
@@ -170,18 +172,26 @@ export default function PacientesPage() {
         </TableContainer>
       )}
 
-      {/* MODAL FORMULARIO (Se crea en el Paso 4) */}
       {openDialog && (
-        <PacientesFormDialog
+        <DoctoresFormDialog
           open={openDialog}
           onClose={() => setOpenDialog(false)}
           onSuccess={() => {
             setOpenDialog(false);
             fetchData();
+            setSnackbarMsg("Doctor guardado");
+            setSnackbarOpen(true);
           }}
-          initialData={selectedPaciente}
+          initialData={selected}
         />
       )}
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={3000}
+        onClose={() => setSnackbarOpen(false)}
+        message={snackbarMsg}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      />
     </Container>
   );
 }

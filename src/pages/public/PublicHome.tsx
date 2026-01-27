@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useState, type JSX } from "react";
 import {
     Alert,
+    Button,
     Card,
     CardActionArea,
     CardContent,
     CircularProgress,
     Pagination,
+    Paper,
     Stack,
     TextField,
     Typography,
@@ -93,8 +95,33 @@ export default function MedicamentosHome(): JSX.Element {
     if (error) return <Alert severity="error">{error}</Alert>;
 
     return (
-        <Stack spacing={2}>
-        <Typography variant="h4">Medicamentos</Typography>
+        <Stack spacing={3}>
+        <Paper
+            variant="outlined"
+            sx={{
+            p: 4,
+            borderRadius: 3,
+            background:
+                "linear-gradient(90deg, rgba(42,157,143,0.08) 0%, rgba(38,70,83,0.06) 100%)",
+            }}
+        >
+            <Typography variant="h4" gutterBottom>
+            Bienvenido a VitaCare
+            </Typography>
+            <Typography color="text.secondary" sx={{ mb: 3 }}>
+            Explora nuestro catálogo de medicamentos y gestiona tu consultorio de forma sencilla.
+            </Typography>
+            <Stack direction="row" spacing={2}>
+            <Button variant="contained" component={RouterLink} to="/auth/login">
+                Ingresar
+            </Button>
+            <Button variant="text" component={RouterLink} to="/auth/register">
+                Crear cuenta
+            </Button>
+            </Stack>
+        </Paper>
+
+        <Typography variant="h5">Medicamentos</Typography>
 
         <TextField
             label="Buscar medicamento"
@@ -108,10 +135,14 @@ export default function MedicamentosHome(): JSX.Element {
         ) : (
             <>
             {items.map((m) => (
-                <Card key={m.id} variant="outlined">
+                <Card key={m.id} variant="outlined" sx={{ borderRadius: 2 }}>
                 <CardActionArea
                     component={RouterLink}
                     to={`/medicamentos/${m.id}`}
+                    sx={{
+                    transition: "all .2s ease",
+                    "&:hover": { transform: "translateY(-2px)", boxShadow: 3, borderColor: "primary.main" },
+                    }}
                 >
                     <CardContent>
                     <Typography variant="h6" sx={{ mb: 0.5 }}>

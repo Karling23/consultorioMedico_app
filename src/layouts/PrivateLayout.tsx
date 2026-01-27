@@ -2,9 +2,12 @@ import {
     AppBar,
     Box,
     Button,
+    Breadcrumbs,
     Divider,
     Drawer,
     IconButton,
+    Avatar,
+    Stack,
     List,
     ListItemButton,
     ListItemIcon,
@@ -12,7 +15,7 @@ import {
     Toolbar,
     Typography,
 } from "@mui/material";
-import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import { Outlet, useLocation, useNavigate, Link as RouterLink } from "react-router-dom";
 import { useState, type JSX } from "react";
 import { useAuth } from "../context/AuthContext";
 
@@ -21,9 +24,10 @@ import DashboardIcon from "@mui/icons-material/Dashboard";
 import CategoryIcon from "@mui/icons-material/Category";
 import ArticleIcon from "@mui/icons-material/Article";
 import GroupIcon from "@mui/icons-material/Group";
-import EventIcon from '@mui/icons-material/Event';
 import PeopleIcon from '@mui/icons-material/People';
-import MeetingRoomIcon from '@mui/icons-material/MeetingRoom';
+import LocalHospitalIcon from '@mui/icons-material/LocalHospital';
+import LinkIcon from '@mui/icons-material/Link';
+import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
 
 const drawerWidth = 260;
 
@@ -36,9 +40,10 @@ type NavItem = {
 const navItems: NavItem[] = [
     { label: "Inicio", to: "/dashboard", icon: <DashboardIcon /> },
     { label: "Medicamentos", to: "/dashboard/medicamentos", icon: <CategoryIcon /> },
-    { label: "Citas Médicas", to: "/dashboard/citas-medicas", icon: <EventIcon /> },
-    { label: "Pacientes", to: "/dashboard/pacientes", icon: <PeopleIcon /> },
-    { label: "Consultorios", to: "/dashboard/consultorios", icon: <MeetingRoomIcon /> },
+    { label: "Especialidades", to: "/dashboard/especialidades", icon: <LocalHospitalIcon /> },
+    { label: "Doctores", to: "/dashboard/doctores", icon: <PeopleIcon /> },
+    { label: "Doctores-Consultorios", to: "/dashboard/doctores-consultorios", icon: <LinkIcon /> },
+    { label: "Recetas", to: "/dashboard/recetas", icon: <ReceiptLongIcon /> },
     { label: "Posts", to: "/dashboard/posts", icon: <ArticleIcon /> },
     { label: "Usuarios", to: "/dashboard/users", icon: <GroupIcon /> },
 ];
@@ -59,16 +64,20 @@ export default function PrivateLayout(): JSX.Element {
         navigate("/", { replace: true });
     };
 
+    const initials = (user?.username || "U").slice(0, 2).toUpperCase();
+
     const drawer = (
         <Box sx={{ width: drawerWidth }}>
-        <Box sx={{ px: 2, py: 2 }}>
-            <Typography variant="h6">Panel</Typography>
-            <Typography variant="body2" color="text.secondary">
-            {user?.username}
-            </Typography>
-            <Typography variant="caption" color="text.secondary">
-            Rol: {user?.rol}
-            </Typography>
+        <Box sx={{ px: 2, py: 3 }}>
+            <Stack direction="row" spacing={2} alignItems="center">
+            <Avatar sx={{ bgcolor: "primary.dark" }}>{initials}</Avatar>
+            <Box>
+                <Typography variant="subtitle1">{user?.username}</Typography>
+                <Typography variant="caption" color="text.secondary">
+                Rol: {user?.rol}
+                </Typography>
+            </Box>
+            </Stack>
         </Box>
 
         <Divider />
@@ -87,8 +96,8 @@ export default function PrivateLayout(): JSX.Element {
         </List>
 
         <Box sx={{ px: 2, py: 2 }}>
-            <Button fullWidth variant="outlined" onClick={onLogout}>
-            Logout
+            <Button fullWidth variant="outlined" color="secondary" onClick={onLogout}>
+            Cerrar sesión
             </Button>
         </Box>
         </Box>
@@ -103,7 +112,7 @@ export default function PrivateLayout(): JSX.Element {
             </IconButton>
 
             <Typography variant="h6" sx={{ flexGrow: 1 }}>
-                Dashboard
+                VitaCare
             </Typography>
 
             <Button color="inherit" onClick={() => navigate("/")}>
@@ -119,6 +128,37 @@ export default function PrivateLayout(): JSX.Element {
         <Toolbar />
 
         <Box sx={{ p: 3 }}>
+            <Breadcrumbs aria-label="breadcrumb" sx={{ mb: 2 }}>
+            {(() => {
+                const segments = location.pathname.split("/").filter(Boolean);
+                const crumbs: { label: string; to?: string }[] = [];
+                if (segments[0] === "dashboard") {
+                crumbs.push({ label: "Inicio", to: "/dashboard" });
+                if (segments.length > 1) {
+                    const full = `/dashboard/${segments[1]}`;
+                    const item = navItems.find((n) => n.to === full);
+                    crumbs.push({ label: item?.label ?? segments[1] });
+                }
+                }
+                return crumbs.map((c, i) =>
+                c.to && i < crumbs.length - 1 ? (
+                    <Button
+                    key={c.to}
+                    component={RouterLink}
+                    to={c.to}
+                    color="inherit"
+                    size="small"
+                    >
+                    {c.label}
+                    </Button>
+                ) : (
+                    <Typography key={`${c.label}-${i}`} color="text.primary">
+                    {c.label}
+                    </Typography>
+                )
+                );
+            })()}
+            </Breadcrumbs>
             <Outlet />
         </Box>
         </Box>

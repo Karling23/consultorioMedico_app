@@ -3,8 +3,10 @@ import {
     Button,
     CircularProgress,
     IconButton,
+    Tooltip,
     Pagination,
     Paper,
+    Snackbar,
     Stack,
     Table,
     TableBody,
@@ -15,7 +17,7 @@ import {
     TextField,
     Typography,
 } from "@mui/material";
-import { useEffect, useMemo, useState, type JSX } from "react";
+import { useCallback, useEffect, useMemo, useState, type JSX } from "react";
 import { useSearchParams } from "react-router-dom";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -60,6 +62,8 @@ export default function MedicamentosPage(): JSX.Element {
     const [open, setOpen] = useState(false);
     const [mode, setMode] = useState<"create" | "edit">("create");
     const [current, setCurrent] = useState<MedicamentoDto | null>(null);
+    const [snackbarOpen, setSnackbarOpen] = useState(false);
+    const [snackbarMsg, setSnackbarMsg] = useState("");
 
     const queryKey = useMemo(
         () => ({
@@ -88,7 +92,7 @@ export default function MedicamentosPage(): JSX.Element {
         setPage(1);
     }, [debouncedSearch]);
 
-    const load = async () => {
+    const load = useCallback(async () => {
         try {
         setLoading(true);
         setError(null);
@@ -100,11 +104,11 @@ export default function MedicamentosPage(): JSX.Element {
         } finally {
         setLoading(false);
         }
-    };
+    }, [queryKey]);
 
     useEffect(() => {
         load();
-    }, [queryKey]);
+    }, [load]);
 
     const onCreate = () => {
         setMode("create");
@@ -130,6 +134,8 @@ export default function MedicamentosPage(): JSX.Element {
             setOpen(false);
             setPage(1);
             await load();
+            setSnackbarMsg("Medicamento creado");
+            setSnackbarOpen(true);
             return;
         }
 
@@ -138,6 +144,8 @@ export default function MedicamentosPage(): JSX.Element {
         await updateMedicamento(current.id, payload);
         setOpen(false);
         await load();
+        setSnackbarMsg("Medicamento actualizado");
+        setSnackbarOpen(true);
         } catch {
         setError("No se pudo guardar el medicamento.");
         }
@@ -148,6 +156,8 @@ export default function MedicamentosPage(): JSX.Element {
         setError(null);
         await deleteMedicamento(id);
         await load();
+        setSnackbarMsg("Medicamento eliminado");
+        setSnackbarOpen(true);
         } catch {
         setError("No se pudo eliminar el medicamento.");
         }
@@ -185,12 +195,12 @@ export default function MedicamentosPage(): JSX.Element {
         ) : (
             <>
             <TableContainer component={Paper} variant="outlined">
-                <Table>
-                <TableHead>
+                <Table size="small" sx={{ "& tbody tr:hover": { bgcolor: "action.hover" } }}>
+                <TableHead sx={{ bgcolor: "grey.100" }}>
                     <TableRow>
-                    <TableCell>Nombre</TableCell>
-                    <TableCell>Descripción</TableCell>
-                    <TableCell align="right">Acciones</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Nombre</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Descripción</TableCell>
+                    <TableCell align="right" sx={{ fontWeight: 600 }}>Acciones</TableCell>
                     </TableRow>
                 </TableHead>
 
@@ -200,12 +210,16 @@ export default function MedicamentosPage(): JSX.Element {
                         <TableCell>{m.nombre}</TableCell>
                         <TableCell>{m.descripcion || "-"}</TableCell>
                         <TableCell align="right">
-                        <IconButton onClick={() => onEdit(m)}>
+                        <Tooltip title="Editar">
+                            <IconButton onClick={() => onEdit(m)} color="primary">
                             <EditIcon />
-                        </IconButton>
-                        <IconButton onClick={() => onDelete(m.id)}>
+                            </IconButton>
+                        </Tooltip>
+                        <Tooltip title="Eliminar">
+                            <IconButton onClick={() => onDelete(m.id)} color="error">
                             <DeleteIcon />
-                        </IconButton>
+                            </IconButton>
+                        </Tooltip>
                         </TableCell>
                     </TableRow>
                     ))}
@@ -229,6 +243,13 @@ export default function MedicamentosPage(): JSX.Element {
             initial={current}
             onClose={() => setOpen(false)}
             onSubmit={onSubmit}
+        />
+        <Snackbar
+            open={snackbarOpen}
+            autoHideDuration={3000}
+            onClose={() => setSnackbarOpen(false)}
+            message={snackbarMsg}
+            anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
         />
         </Stack>
     );

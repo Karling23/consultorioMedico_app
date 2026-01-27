@@ -1,4 +1,5 @@
 import { Alert, Button, Paper, Stack, TextField, Typography } from "@mui/material";
+import LocalHospitalIcon from "@mui/icons-material/LocalHospital";
 import { useState, type FormEvent } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
@@ -31,9 +32,15 @@ export default function Login(): JSX.Element {
     };
 
     return (
-        <Paper sx={{ p: 3, maxWidth: 420, mx: "auto" }}>
+        <Paper sx={{ p: 4, maxWidth: 440, mx: "auto" }}>
         <Stack spacing={2} component="form" onSubmit={handleSubmit}>
+            <Stack direction="row" spacing={1} alignItems="center">
+            <LocalHospitalIcon color="primary" />
             <Typography variant="h5">Iniciar sesión</Typography>
+            </Stack>
+            <Typography variant="body2" color="text.secondary">
+            Accede al panel del consultorio médico
+            </Typography>
 
             {error && <Alert severity="error">{error}</Alert>}
 

@@ -1,10 +1,16 @@
 import { AppBar, Box, Button, Toolbar, Typography } from "@mui/material";
 import { Link as RouterLink } from "react-router-dom";
 import type { JSX } from "react";
+import LocalHospitalIcon from "@mui/icons-material/LocalHospital";
 
 export default function PublicHeader(): JSX.Element {
   return (
-    <AppBar position="fixed">
+    <AppBar
+      position="fixed"
+      sx={{
+        background: "linear-gradient(90deg, rgba(25,118,210,1) 0%, rgba(2,136,209,1) 100%)",
+      }}
+    >
       <Toolbar>
         <Box
   sx={{
@@ -16,14 +22,8 @@ export default function PublicHeader(): JSX.Element {
   }}
 >
   <Box display="flex" alignItems="center" gap={2}>
-    <img
-      src="https://static.vecteezy.com/system/resources/thumbnails/022/791/223/small/blog-site-blogger-png.png"
-      alt="logo"
-      width="32"
-      height="32"
-      style={{ display: "block" }}
-    />
-    <Typography variant="h6">BlogApp</Typography>
+    <LocalHospitalIcon fontSize="large" />
+    <Typography variant="h6">VitaCare</Typography>
   </Box>
 </Box>
 
@@ -31,15 +31,15 @@ export default function PublicHeader(): JSX.Element {
         <Box sx={{ flexGrow: 1 }} />
 
         <Button color="inherit" component={RouterLink} to="/">
-          Home
+          Inicio
         </Button>
 
         <Button color="inherit" component={RouterLink} to="/auth/login">
-          Login
+          Ingresar
         </Button>
 
         <Button color="inherit" component={RouterLink} to="/auth/register">
-          Register
+          Registro
         </Button>
       </Toolbar>
     </AppBar>
