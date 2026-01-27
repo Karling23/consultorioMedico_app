@@ -7,9 +7,9 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  Grid,
   TextField,
 } from "@mui/material";
+import Grid2 from "@mui/material/Grid2";
 
 import {
   createPaciente,
@@ -140,8 +140,8 @@ export const PacientesFormDialog = ({
             </Alert>
           )}
 
-          <Grid container spacing={2}>
-            <Grid xs={12} md={6}>
+          <Grid2 container spacing={2}>
+            <Grid2 xs={12} md={6}>
               <TextField
                 fullWidth
                 label="ID Usuario (Login)"
@@ -151,9 +151,9 @@ export const PacientesFormDialog = ({
                 error={!!fieldErrors.id_usuario}
                 helperText={fieldErrors.id_usuario}
               />
-            </Grid>
+            </Grid2>
 
-            <Grid xs={12} md={6}>
+            <Grid2 xs={12} md={6}>
               <TextField
                 fullWidth
                 label="Cédula"
@@ -163,9 +163,9 @@ export const PacientesFormDialog = ({
                 error={!!fieldErrors.cedula}
                 helperText={fieldErrors.cedula}
               />
-            </Grid>
+            </Grid2>
 
-            <Grid xs={12} md={6}>
+            <Grid2 xs={12} md={6}>
               <TextField
                 fullWidth
                 label="Fecha de Nacimiento"
@@ -176,9 +176,9 @@ export const PacientesFormDialog = ({
                 error={!!fieldErrors.fecha_nacimiento}
                 helperText={fieldErrors.fecha_nacimiento}
               />
-            </Grid>
+            </Grid2>
 
-            <Grid xs={12} md={6}>
+            <Grid2 xs={12} md={6}>
               <TextField
                 fullWidth
                 label="Teléfono"
@@ -187,9 +187,9 @@ export const PacientesFormDialog = ({
                 error={!!fieldErrors.telefono}
                 helperText={fieldErrors.telefono}
               />
-            </Grid>
+            </Grid2>
 
-            <Grid xs={12}>
+            <Grid2 xs={12}>
               <TextField
                 fullWidth
                 label="Dirección"
@@ -200,8 +200,8 @@ export const PacientesFormDialog = ({
                 error={!!fieldErrors.direccion}
                 helperText={fieldErrors.direccion}
               />
-            </Grid>
-          </Grid>
+            </Grid2>
+          </Grid2>
         </DialogContent>
 
         <DialogActions>
