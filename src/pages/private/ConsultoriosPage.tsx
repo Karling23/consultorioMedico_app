@@ -22,16 +22,11 @@ import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
 
-// Importamos tipos y funciones del servicio
-import {
-  deleteConsultorio,
-  getConsultorios,
-  type ConsultorioDto,
-  type PaginatedConsultorios,
-} from "../../services/consultorios.service";
-
-// Importamos el formulario (que crearemos en el paso 4)
+import {deleteConsultorio,getConsultorios,type ConsultorioDto,type PaginatedConsultorios,} from "../../services/consultorios.service";
 import { ConsultoriosFormDialog } from "../../components/consultorios/ConsultoriosFormDialog";
+
+// 1. Importamos useAuth
+import { useAuth } from "../../context/AuthContext";
 
 function useDebouncedValue<T>(value: T, delay: number): T {
   const [debouncedValue, setDebouncedValue] = useState(value);
@@ -43,6 +38,10 @@ function useDebouncedValue<T>(value: T, delay: number): T {
 }
 
 export default function ConsultoriosPage() {
+  // 2. Verificamos Rol
+  const { user } = useAuth();
+  const isAdmin = user?.rol === 'admin';
+
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebouncedValue(search, 500);
@@ -96,9 +95,12 @@ export default function ConsultoriosPage() {
     <Container maxWidth="lg" sx={{ mt: 4 }}>
       <Stack direction="row" justifyContent="space-between" alignItems="center" mb={3}>
         <Typography variant="h4">Gestión de Consultorios</Typography>
-        <Button variant="contained" startIcon={<AddIcon />} onClick={handleCreate}>
-          Nuevo Consultorio
-        </Button>
+        {/* 3. Protección Botón Crear */}
+        {isAdmin && (
+          <Button variant="contained" startIcon={<AddIcon />} onClick={handleCreate}>
+            Nuevo Consultorio
+          </Button>
+        )}
       </Stack>
 
       <Paper sx={{ p: 2, mb: 3 }}>
@@ -107,17 +109,12 @@ export default function ConsultoriosPage() {
           variant="outlined"
           placeholder="Buscar por nombre o ubicación..."
           value={search}
-          onChange={(e) => {
-            setSearch(e.target.value);
-            setPage(1);
-          }}
+          onChange={(e) => { setSearch(e.target.value); setPage(1); }}
         />
       </Paper>
 
       {loading ? (
-        <Box display="flex" justifyContent="center" p={4}>
-          <CircularProgress />
-        </Box>
+        <Box display="flex" justifyContent="center" p={4}><CircularProgress /></Box>
       ) : (
         <TableContainer component={Paper}>
           <Table>
@@ -127,7 +124,8 @@ export default function ConsultoriosPage() {
                 <TableCell>Nombre</TableCell>
                 <TableCell>Ubicación</TableCell>
                 <TableCell>Estado</TableCell>
-                <TableCell align="right">Acciones</TableCell>
+                {/* 4. Protección Columna Acciones */}
+                {isAdmin && <TableCell align="right">Acciones</TableCell>}
               </TableRow>
             </TableHead>
             <TableBody>
@@ -143,19 +141,22 @@ export default function ConsultoriosPage() {
                       size="small"
                     />
                   </TableCell>
-                  <TableCell align="right">
-                    <IconButton color="primary" onClick={() => handleEdit(cons)}>
-                      <EditIcon />
-                    </IconButton>
-                    <IconButton color="error" onClick={() => handleDelete(cons.id_consultorio)}>
-                      <DeleteIcon />
-                    </IconButton>
-                  </TableCell>
+                  {/* 5. Protección Botones Editar/Borrar */}
+                  {isAdmin && (
+                    <TableCell align="right">
+                      <IconButton color="primary" onClick={() => handleEdit(cons)}>
+                        <EditIcon />
+                      </IconButton>
+                      <IconButton color="error" onClick={() => handleDelete(cons.id_consultorio)}>
+                        <DeleteIcon />
+                      </IconButton>
+                    </TableCell>
+                  )}
                 </TableRow>
               ))}
               {data?.items.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={5} align="center">
+                  <TableCell colSpan={isAdmin ? 5 : 4} align="center">
                     No se encontraron consultorios.
                   </TableCell>
                 </TableRow>
@@ -171,7 +172,7 @@ export default function ConsultoriosPage() {
                 onChange={(_, value) => setPage(value)}
                 color="primary"
               />
-            </Box> 
+            </Box>
           )}
         </TableContainer>
       )}
@@ -180,10 +181,7 @@ export default function ConsultoriosPage() {
         <ConsultoriosFormDialog
           open={openDialog}
           onClose={() => setOpenDialog(false)}
-          onSuccess={() => {
-            setOpenDialog(false);
-            fetchData();
-          }}
+          onSuccess={() => { setOpenDialog(false); fetchData(); }}
           initialData={selectedConsultorio}
         />
       )}
