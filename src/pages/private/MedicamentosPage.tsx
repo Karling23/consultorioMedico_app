@@ -22,6 +22,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
 
 import MedicamentoFormDialog from "../../components/medicamentos/MedicamentosFormDialog";
+import { useAuth } from "../../context/AuthContext";
 import {
     type MedicamentoDto,
     createMedicamento,
@@ -40,6 +41,7 @@ function useDebouncedValue<T>(value: T, delayMs: number): T {
 }
 
 export default function MedicamentosPage(): JSX.Element {
+    const { user } = useAuth();
     const [sp, setSp] = useSearchParams();
 
     const pageParam = Number(sp.get("page") || "1");
@@ -60,6 +62,8 @@ export default function MedicamentosPage(): JSX.Element {
     const [open, setOpen] = useState(false);
     const [mode, setMode] = useState<"create" | "edit">("create");
     const [current, setCurrent] = useState<MedicamentoDto | null>(null);
+
+    const isAdmin = (user?.rol || "").toLowerCase() === "admin";
 
     const queryKey = useMemo(
         () => ({
@@ -107,12 +111,20 @@ export default function MedicamentosPage(): JSX.Element {
     }, [queryKey]);
 
     const onCreate = () => {
+        if (!isAdmin) {
+        setError("No tienes permisos para crear medicamentos.");
+        return;
+        }
         setMode("create");
         setCurrent(null);
         setOpen(true);
     };
 
     const onEdit = (m: MedicamentoDto) => {
+        if (!isAdmin) {
+        setError("No tienes permisos para editar medicamentos.");
+        return;
+        }
         setMode("edit");
         setCurrent(m);
         setOpen(true);
@@ -121,9 +133,16 @@ export default function MedicamentosPage(): JSX.Element {
     const onSubmit = async (payload: {
         nombre: string;
         descripcion?: string;
+        precio: number;
+        stock: number;
     }) => {
         try {
         setError(null);
+
+        if (!isAdmin) {
+            setError("No tienes permisos para guardar medicamentos.");
+            return;
+        }
 
         if (mode === "create") {
             await createMedicamento(payload);
@@ -146,6 +165,10 @@ export default function MedicamentosPage(): JSX.Element {
     const onDelete = async (id: string) => {
         try {
         setError(null);
+        if (!isAdmin) {
+            setError("No tienes permisos para eliminar medicamentos.");
+            return;
+        }
         await deleteMedicamento(id);
         await load();
         } catch {
@@ -164,9 +187,11 @@ export default function MedicamentosPage(): JSX.Element {
             Medicamentos
             </Typography>
 
-            <Button variant="contained" startIcon={<AddIcon />} onClick={onCreate}>
-            Nuevo
-            </Button>
+            {isAdmin && (
+                <Button variant="contained" startIcon={<AddIcon />} onClick={onCreate}>
+                Nuevo
+                </Button>
+            )}
         </Stack>
 
         {error && <Alert severity="error">{error}</Alert>}
@@ -190,7 +215,7 @@ export default function MedicamentosPage(): JSX.Element {
                     <TableRow>
                     <TableCell>Nombre</TableCell>
                     <TableCell>Descripción</TableCell>
-                    <TableCell align="right">Acciones</TableCell>
+                    {isAdmin && <TableCell align="right">Acciones</TableCell>}
                     </TableRow>
                 </TableHead>
 
@@ -199,14 +224,16 @@ export default function MedicamentosPage(): JSX.Element {
                     <TableRow key={m.id}>
                         <TableCell>{m.nombre}</TableCell>
                         <TableCell>{m.descripcion || "-"}</TableCell>
-                        <TableCell align="right">
-                        <IconButton onClick={() => onEdit(m)}>
-                            <EditIcon />
-                        </IconButton>
-                        <IconButton onClick={() => onDelete(m.id)}>
-                            <DeleteIcon />
-                        </IconButton>
-                        </TableCell>
+                        {isAdmin && (
+                            <TableCell align="right">
+                            <IconButton onClick={() => onEdit(m)}>
+                                <EditIcon />
+                            </IconButton>
+                            <IconButton onClick={() => onDelete(m.id)}>
+                                <DeleteIcon />
+                            </IconButton>
+                            </TableCell>
+                        )}
                     </TableRow>
                     ))}
                 </TableBody>

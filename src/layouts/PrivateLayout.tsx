@@ -21,6 +21,7 @@ import DashboardIcon from "@mui/icons-material/Dashboard";
 import CategoryIcon from "@mui/icons-material/Category";
 import ArticleIcon from "@mui/icons-material/Article";
 import GroupIcon from "@mui/icons-material/Group";
+import HistoryIcon from "@mui/icons-material/History";
 
 const drawerWidth = 260;
 
@@ -30,18 +31,22 @@ type NavItem = {
     icon: JSX.Element;
 };
 
-const navItems: NavItem[] = [
-    { label: "Inicio", to: "/dashboard", icon: <DashboardIcon /> },
-    { label: "Medicamentos", to: "/dashboard/medicamentos", icon: <CategoryIcon /> },
-    { label: "Posts", to: "/dashboard/posts", icon: <ArticleIcon /> },
-    { label: "Usuarios", to: "/dashboard/users", icon: <GroupIcon /> },
-];
-
 export default function PrivateLayout(): JSX.Element {
     const { user, logout } = useAuth();
+    const isAdmin = (user?.rol || "").toLowerCase() === "admin";
     const [open, setOpen] = useState(false);
     const navigate = useNavigate();
     const location = useLocation();
+
+    const navItems: NavItem[] = [
+        { label: "Inicio", to: "/dashboard", icon: <DashboardIcon /> },
+        { label: "Medicamentos", to: "/dashboard/medicamentos", icon: <CategoryIcon /> },
+        { label: "Historial clinico", to: "/dashboard/historial-clinico", icon: <HistoryIcon /> },
+        { label: "Posts", to: "/dashboard/posts", icon: <ArticleIcon /> },
+        ...(isAdmin
+            ? [{ label: "Usuarios", to: "/dashboard/users", icon: <GroupIcon /> }]
+            : []),
+    ];
 
     const onGo = (to: string) => {
         navigate(to);
@@ -97,7 +102,7 @@ export default function PrivateLayout(): JSX.Element {
             </IconButton>
 
             <Typography variant="h6" sx={{ flexGrow: 1 }}>
-                Dashboard
+                VitaCare
             </Typography>
 
             <Button color="inherit" onClick={() => navigate("/")}>

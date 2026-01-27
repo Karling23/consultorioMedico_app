@@ -40,6 +40,8 @@ export default function MedicamentoFormDialog({
     if (open) {
       setNombre(initial?.nombre || "");
       setDescripcion(initial?.descripcion || "");
+      setPrecio(typeof initial?.precio === "number" ? initial.precio : Number(initial?.precio ?? 0));
+      setStock(typeof initial?.stock === "number" ? initial.stock : Number(initial?.stock ?? 0));
     }
   }, [open, initial]);
 
