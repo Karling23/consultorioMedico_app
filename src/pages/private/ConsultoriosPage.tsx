@@ -171,7 +171,7 @@ export default function ConsultoriosPage() {
                 onChange={(_, value) => setPage(value)}
                 color="primary"
               />
-            </Box>
+            </Box> 
           )}
         </TableContainer>
       )}

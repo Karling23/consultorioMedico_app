@@ -1,38 +1,17 @@
-import {
-  Box,
-  Button,
-  CircularProgress,
-  Container,
-  IconButton,
-  Pagination,
-  Paper,
-  Stack,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  TextField,
-  Typography,
-} from "@mui/material";
+import {Box,Button,CircularProgress,Container,IconButton,Pagination,Paper,Stack,Table,TableBody,
+TableCell,TableContainer,TableHead,TableRow,TextField,
+Typography,} from "@mui/material";
 import { useEffect, useState } from "react";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
 
-// Importamos usando 'type' para evitar errores
-import {
-  deletePaciente,
-  getPacientes,
-  type PacienteDto,
-  type PaginatedPacientes,
-} from "../../services/pacientes.service";
-
-// IMPORTANTE: Este componente lo crearemos en el Paso 4.
+import {deletePaciente,getPacientes,type PacienteDto,type PaginatedPacientes,} from "../../services/pacientes.service";
 import { PacientesFormDialog } from "../../components/pacientes/PacientesFormDialog";
 
-// Helper simple para debounce
+// 1. IMPORTAMOS useAuth PARA SABER EL ROL
+import { useAuth } from "../../context/AuthContext";
+
 function useDebouncedValue<T>(value: T, delay: number): T {
   const [debouncedValue, setDebouncedValue] = useState(value);
   useEffect(() => {
@@ -43,6 +22,10 @@ function useDebouncedValue<T>(value: T, delay: number): T {
 }
 
 export default function PacientesPage() {
+  // 2. OBTENEMOS EL USUARIO DEL CONTEXTO
+  const { user } = useAuth(); 
+  const isAdmin = user?.rol === 'admin'; 
+
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
   const debouncedSearch = useDebouncedValue(search, 500);
@@ -96,9 +79,13 @@ export default function PacientesPage() {
     <Container maxWidth="lg" sx={{ mt: 4 }}>
       <Stack direction="row" justifyContent="space-between" alignItems="center" mb={3}>
         <Typography variant="h4">Gestión de Pacientes</Typography>
-        <Button variant="contained" startIcon={<AddIcon />} onClick={handleCreate}>
-          Nuevo Paciente
-        </Button>
+        
+        {/* 3. SOLO MOSTRAR BOTÓN CREAR SI ES ADMIN */}
+        {isAdmin && ( 
+          <Button variant="contained" startIcon={<AddIcon />} onClick={handleCreate}>
+            Nuevo Paciente
+          </Button>
+        )}
       </Stack>
 
       <Paper sx={{ p: 2, mb: 3 }}>
@@ -127,7 +114,10 @@ export default function PacientesPage() {
                 <TableCell>Cédula</TableCell>
                 <TableCell>Teléfono</TableCell>
                 <TableCell>Dirección</TableCell>
-                <TableCell align="right">Acciones</TableCell>
+                
+                {/* 4. SOLO MOSTRAR COLUMNA ACCIONES SI ES ADMIN */}
+                {isAdmin && <TableCell align="right">Acciones</TableCell>}
+              
               </TableRow>
             </TableHead>
             <TableBody>
@@ -137,19 +127,24 @@ export default function PacientesPage() {
                   <TableCell>{paciente.cedula}</TableCell>
                   <TableCell>{paciente.telefono}</TableCell>
                   <TableCell>{paciente.direccion}</TableCell>
-                  <TableCell align="right">
-                    <IconButton color="primary" onClick={() => handleEdit(paciente)}>
-                      <EditIcon />
-                    </IconButton>
-                    <IconButton color="error" onClick={() => handleDelete(paciente.id_paciente)}>
-                      <DeleteIcon />
-                    </IconButton>
-                  </TableCell>
+                  
+                  {/* 5. SOLO MOSTRAR BOTONES EDITAR/BORRAR SI ES ADMIN */}
+                  {isAdmin && (
+                    <TableCell align="right">
+                      <IconButton color="primary" onClick={() => handleEdit(paciente)}>
+                        <EditIcon />
+                      </IconButton>
+                      <IconButton color="error" onClick={() => handleDelete(paciente.id_paciente)}>
+                        <DeleteIcon />
+                      </IconButton>
+                    </TableCell>
+                  )}
+
                 </TableRow>
               ))}
               {data?.items.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={5} align="center">
+                  <TableCell colSpan={isAdmin ? 5 : 4} align="center">
                     No se encontraron pacientes.
                   </TableCell>
                 </TableRow>
@@ -170,7 +165,7 @@ export default function PacientesPage() {
         </TableContainer>
       )}
 
-      {/* MODAL FORMULARIO (Se crea en el Paso 4) */}
+      {/* El modal solo se renderiza si se abre, pero por seguridad podrías envolverlo también */}
       {openDialog && (
         <PacientesFormDialog
           open={openDialog}
