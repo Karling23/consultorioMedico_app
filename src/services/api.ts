@@ -16,3 +16,11 @@ api.interceptors.request.use(
         return Promise.reject(error);
     }
 );
+api.interceptors.request.use((config) => {
+    const token = localStorage.getItem("auth_token");
+    if (token) {
+        config.headers = config.headers ?? {};
+        config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+});
