@@ -7,6 +7,7 @@ import {
   Stack,
   TextField,
 } from "@mui/material";
+import { useState, type JSX } from "react";
 import { useEffect, useState, type JSX, type FormEvent } from "react";
 import { type MedicamentoDto } from "../../services/medicamentos.service";
 
@@ -31,11 +32,12 @@ export default function MedicamentoFormDialog({
   onClose,
   onSubmit,
 }: Props): JSX.Element {
-  const [nombre, setNombre] = useState("");
-  const [descripcion, setDescripcion] = useState("");
+  const [nombre, setNombre] = useState(initial?.nombre || "");
+  const [descripcion, setDescripcion] = useState(initial?.descripcion || "");
   const [precio, setPrecio] = useState<number>(0);
   const [stock, setStock] = useState<number>(0);
 
+  const handleSubmit = (e: React.FormEvent) => {
   useEffect(() => {
     if (open) {
       setNombre(initial?.nombre || "");
@@ -56,7 +58,7 @@ export default function MedicamentoFormDialog({
   };
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
+    <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm" key={`${mode}-${initial?.id ?? "new"}-${open ? "1" : "0"}`}>
       <DialogTitle>
         {mode === "create" ? "Nuevo medicamento" : "Editar medicamento"}
       </DialogTitle>

@@ -36,7 +36,13 @@ export async function getMedicamentos(
   const { data } = await api.get("/medicamentos", { params });
 
   return {
-    items: data.items.map((m: any) => ({
+    items: data.items.map((m: {
+      _id: string;
+      nombre: string;
+      descripcion?: string;
+      createdAt?: string;
+      updatedAt?: string;
+    }) => ({
       id: m._id,
       nombre: m.nombre,
       descripcion: m.descripcion,
