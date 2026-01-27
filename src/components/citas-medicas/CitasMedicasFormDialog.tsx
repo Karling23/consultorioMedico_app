@@ -6,11 +6,11 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  Grid,
   MenuItem,
   TextField,
   CircularProgress,
 } from "@mui/material";
-import Grid2 from "@mui/material/Unstable_Grid2";
 // Importamos los tipos y servicios
 import {
   type CitaMedicaDto,
@@ -134,8 +134,8 @@ export const CitasMedicasFormDialog = ({
             </Alert>
           )}
 
-          <Grid2 container spacing={2}>
-            <Grid2 xs={12} md={4}>
+          <Grid container spacing={2}>
+            <Grid size={{ xs: 12, md: 4 }}>
               <TextField
                 fullWidth
                 label="ID Paciente"
@@ -143,8 +143,8 @@ export const CitasMedicasFormDialog = ({
                 value={idPaciente || ""}
                 onChange={(e) => setIdPaciente(Number(e.target.value))}
               />
-            </Grid2>
-            <Grid2 xs={12} md={4}>
+            </Grid>
+            <Grid size={{ xs: 12, md: 4 }}>
               <TextField
                 fullWidth
                 label="ID Doctor"
@@ -152,8 +152,8 @@ export const CitasMedicasFormDialog = ({
                 value={idDoctor || ""}
                 onChange={(e) => setIdDoctor(Number(e.target.value))}
               />
-            </Grid2>
-            <Grid2 xs={12} md={4}>
+            </Grid>
+            <Grid size={{ xs: 12, md: 4 }}>
               <TextField
                 fullWidth
                 label="ID Consultorio"
@@ -161,9 +161,9 @@ export const CitasMedicasFormDialog = ({
                 value={idConsultorio || ""}
                 onChange={(e) => setIdConsultorio(Number(e.target.value))}
               />
-            </Grid2>
+            </Grid>
 
-            <Grid2 xs={12} md={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <TextField
                 fullWidth
                 label="Fecha de Cita"
@@ -172,8 +172,8 @@ export const CitasMedicasFormDialog = ({
                 value={fechaCita}
                 onChange={(e) => setFechaCita(e.target.value)}
               />
-            </Grid2>
-            <Grid2 xs={12} md={6}>
+            </Grid>
+            <Grid size={{ xs: 12, md: 6 }}>
               <TextField
                 fullWidth
                 label="Hora (HH:mm)"
@@ -183,9 +183,9 @@ export const CitasMedicasFormDialog = ({
                 value={horaCita}
                 onChange={(e) => setHoraCita(e.target.value)}
               />
-            </Grid2>
+            </Grid>
 
-            <Grid2 xs={12} md={6}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <TextField
                 fullWidth
                 select
@@ -199,9 +199,9 @@ export const CitasMedicasFormDialog = ({
                 <MenuItem value="Confirmada">Confirmada</MenuItem>
                 <MenuItem value="Cancelada">Cancelada</MenuItem>
               </TextField>
-            </Grid2>
+            </Grid>
 
-            <Grid2 xs={12}>
+            <Grid size={{ xs: 12 }}>
               <TextField
                 fullWidth
                 label="Motivo / Observaciones"
@@ -210,8 +210,8 @@ export const CitasMedicasFormDialog = ({
                 value={motivo}
                 onChange={(e) => setMotivo(e.target.value)}
               />
-            </Grid2>
-          </Grid2>
+            </Grid>
+          </Grid>
         </DialogContent>
 
         <DialogActions>

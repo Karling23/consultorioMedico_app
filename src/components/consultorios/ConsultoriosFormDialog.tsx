@@ -7,10 +7,10 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  Grid,
   MenuItem,
   TextField,
 } from "@mui/material";
-import Grid2 from "@mui/material/Unstable_Grid2";
 
 import {
   createConsultorio,
@@ -131,8 +131,8 @@ export const ConsultoriosFormDialog = ({
             </Alert>
           )}
 
-          <Grid2 container spacing={2}>
-            <Grid2 xs={12}>
+          <Grid container spacing={2}>
+            <Grid size={{ xs: 12 }}>
               <TextField
                 fullWidth
                 label="Nombre del Consultorio"
@@ -141,9 +141,9 @@ export const ConsultoriosFormDialog = ({
                 error={!!fieldErrors.nombre}
                 helperText={fieldErrors.nombre}
               />
-            </Grid2>
+            </Grid>
 
-            <Grid2 xs={12}>
+            <Grid size={{ xs: 12 }}>
               <TextField
                 fullWidth
                 label="Ubicacion"
@@ -154,9 +154,9 @@ export const ConsultoriosFormDialog = ({
                 error={!!fieldErrors.ubicacion}
                 helperText={fieldErrors.ubicacion}
               />
-            </Grid2>
+            </Grid>
 
-            <Grid2 xs={12}>
+            <Grid size={{ xs: 12 }}>
               <TextField
                 fullWidth
                 select
@@ -169,8 +169,8 @@ export const ConsultoriosFormDialog = ({
                 <MenuItem value="activo">Activo</MenuItem>
                 <MenuItem value="inactivo">Inactivo</MenuItem>
               </TextField>
-            </Grid2>
-          </Grid2>
+            </Grid>
+          </Grid>
         </DialogContent>
 
         <DialogActions>
