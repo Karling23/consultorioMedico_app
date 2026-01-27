@@ -49,11 +49,11 @@ export async function getHistorialClinico(params?: {
 
     return {
         items: items.map((h) => ({
-            id: h._id ?? h.id,
-            id_cita: Number(h.id_cita),
-            diagnostico: h.diagnostico,
-            tratamiento: h.tratamiento,
-            observaciones: h.observaciones,
+            id: String(h._id ?? h.id ?? ""),
+            id_cita: Number(h.id_cita ?? 0),
+            diagnostico: h.diagnostico ?? "",
+            tratamiento: h.tratamiento ?? "",
+            observaciones: h.observaciones ?? "",
             createdAt: h.createdAt,
             updatedAt: h.updatedAt,
         })),
@@ -69,11 +69,11 @@ export async function createHistorialClinico(payload: {
 }): Promise<HistorialClinicoDto> {
     const { data } = await api.post("/historial-clinico", payload);
     return {
-        id: data._id ?? data.id,
-        id_cita: Number(data.id_cita),
-        diagnostico: data.diagnostico,
-        tratamiento: data.tratamiento,
-        observaciones: data.observaciones,
+        id: String(data._id ?? data.id ?? ""),
+        id_cita: Number(data.id_cita ?? 0),
+        diagnostico: data.diagnostico ?? "",
+        tratamiento: data.tratamiento ?? "",
+        observaciones: data.observaciones ?? "",
         createdAt: data.createdAt,
         updatedAt: data.updatedAt,
     };
@@ -89,11 +89,11 @@ export async function updateHistorialClinico(
 ): Promise<HistorialClinicoDto> {
     const { data } = await api.put(`/historial-clinico/${id}`, payload);
     return {
-        id: data._id ?? data.id,
-        id_cita: Number(data.id_cita),
-        diagnostico: data.diagnostico,
-        tratamiento: data.tratamiento,
-        observaciones: data.observaciones,
+        id: String(data._id ?? data.id ?? ""),
+        id_cita: Number(data.id_cita ?? 0),
+        diagnostico: data.diagnostico ?? "",
+        tratamiento: data.tratamiento ?? "",
+        observaciones: data.observaciones ?? "",
         createdAt: data.createdAt,
         updatedAt: data.updatedAt,
     };

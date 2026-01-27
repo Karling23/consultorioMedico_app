@@ -141,11 +141,14 @@ export default function HistorialClinicoPage(): JSX.Element {
             const payload = data?.data ?? data;
             const items = Array.isArray(payload?.items) ? (payload.items as RawCitaDto[]) : [];
             const meta = payload?.meta ?? {};
+            const normalized: CitaDto[] = items.flatMap((c) => {
+                const id_cita = typeof c.id_cita === "number" ? c.id_cita : null;
+                const id_paciente = typeof c.id_paciente === "number" ? c.id_paciente : null;
+                if (id_cita === null || id_paciente === null) return [];
+                return [{ id_cita, id_paciente }];
+            });
             return {
-                items: items.map((c) => ({
-                    id_cita: c.id_cita,
-                    id_paciente: c.id_paciente,
-                })),
+                items: normalized,
                 meta,
             };
         });

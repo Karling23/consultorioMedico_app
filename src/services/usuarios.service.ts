@@ -40,9 +40,9 @@ export async function getUsuarios(params?: {
 
     return {
         items: items.map((u) => ({
-            id_usuario: u.id_usuario,
-            nombre_usuario: u.nombre_usuario,
-            rol: u.rol,
+            id_usuario: u.id_usuario ?? 0,
+            nombre_usuario: u.nombre_usuario ?? "",
+            rol: u.rol ?? "",
             fecha_creacion: u.fecha_creacion,
             profile: u.profile ?? null,
         })),
@@ -58,9 +58,9 @@ export async function createUsuario(payload: {
     const { data } = await api.post("/usuarios", payload);
     const u = data?.data ?? data;
     return {
-        id_usuario: u.id_usuario,
-        nombre_usuario: u.nombre_usuario,
-        rol: u.rol,
+        id_usuario: u.id_usuario ?? 0,
+        nombre_usuario: u.nombre_usuario ?? "",
+        rol: u.rol ?? "",
         fecha_creacion: u.fecha_creacion,
         profile: u.profile ?? null,
     };
@@ -77,9 +77,9 @@ export async function updateUsuario(
     const { data } = await api.put(`/usuarios/${id}`, payload);
     const u = data?.data ?? data;
     return {
-        id_usuario: u.id_usuario,
-        nombre_usuario: u.nombre_usuario,
-        rol: u.rol,
+        id_usuario: u.id_usuario ?? 0,
+        nombre_usuario: u.nombre_usuario ?? "",
+        rol: u.rol ?? "",
         fecha_creacion: u.fecha_creacion,
         profile: u.profile ?? null,
     };

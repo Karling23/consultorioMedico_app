@@ -132,7 +132,7 @@ export const ConsultoriosFormDialog = ({
           )}
 
           <Grid container spacing={2}>
-            <Grid item xs={12}>
+            <Grid xs={12}>
               <TextField
                 fullWidth
                 label="Nombre del Consultorio"
@@ -143,7 +143,7 @@ export const ConsultoriosFormDialog = ({
               />
             </Grid>
 
-            <Grid item xs={12}>
+            <Grid xs={12}>
               <TextField
                 fullWidth
                 label="Ubicacion"
@@ -156,7 +156,7 @@ export const ConsultoriosFormDialog = ({
               />
             </Grid>
 
-            <Grid item xs={12}>
+            <Grid xs={12}>
               <TextField
                 fullWidth
                 select

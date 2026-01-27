@@ -141,7 +141,7 @@ export const PacientesFormDialog = ({
           )}
 
           <Grid container spacing={2}>
-            <Grid item xs={12} md={6}>
+            <Grid xs={12} md={6}>
               <TextField
                 fullWidth
                 label="ID Usuario (Login)"
@@ -153,7 +153,7 @@ export const PacientesFormDialog = ({
               />
             </Grid>
 
-            <Grid item xs={12} md={6}>
+            <Grid xs={12} md={6}>
               <TextField
                 fullWidth
                 label="Cédula"
@@ -165,7 +165,7 @@ export const PacientesFormDialog = ({
               />
             </Grid>
 
-            <Grid item xs={12} md={6}>
+            <Grid xs={12} md={6}>
               <TextField
                 fullWidth
                 label="Fecha de Nacimiento"
@@ -178,7 +178,7 @@ export const PacientesFormDialog = ({
               />
             </Grid>
 
-            <Grid item xs={12} md={6}>
+            <Grid xs={12} md={6}>
               <TextField
                 fullWidth
                 label="Teléfono"
@@ -189,7 +189,7 @@ export const PacientesFormDialog = ({
               />
             </Grid>
 
-            <Grid item xs={12}>
+            <Grid xs={12}>
               <TextField
                 fullWidth
                 label="Dirección"

@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, { AxiosHeaders } from "axios";
 
 export const api = axios.create({
     baseURL: import.meta.env.VITE_API_URL,
@@ -7,9 +7,7 @@ export const api = axios.create({
 api.interceptors.request.use((config) => {
     const token = localStorage.getItem("auth_token");
     if (token) {
-        if (!config.headers) {
-            config.headers = {};
-        }
+        config.headers = config.headers ?? new AxiosHeaders();
         if ("set" in config.headers && typeof config.headers.set === "function") {
             config.headers.set("Authorization", `Bearer ${token}`);
         } else {

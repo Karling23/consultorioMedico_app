@@ -135,7 +135,7 @@ export const CitasMedicasFormDialog = ({
           )}
 
           <Grid container spacing={2}>
-            <Grid item xs={12} md={4}>
+            <Grid xs={12} md={4}>
               <TextField
                 fullWidth
                 label="ID Paciente"
@@ -144,7 +144,7 @@ export const CitasMedicasFormDialog = ({
                 onChange={(e) => setIdPaciente(Number(e.target.value))}
               />
             </Grid>
-            <Grid item xs={12} md={4}>
+            <Grid xs={12} md={4}>
               <TextField
                 fullWidth
                 label="ID Doctor"
@@ -153,7 +153,7 @@ export const CitasMedicasFormDialog = ({
                 onChange={(e) => setIdDoctor(Number(e.target.value))}
               />
             </Grid>
-            <Grid item xs={12} md={4}>
+            <Grid xs={12} md={4}>
               <TextField
                 fullWidth
                 label="ID Consultorio"
@@ -163,7 +163,7 @@ export const CitasMedicasFormDialog = ({
               />
             </Grid>
 
-            <Grid item xs={12} md={6}>
+            <Grid xs={12} md={6}>
               <TextField
                 fullWidth
                 label="Fecha de Cita"
@@ -173,7 +173,7 @@ export const CitasMedicasFormDialog = ({
                 onChange={(e) => setFechaCita(e.target.value)}
               />
             </Grid>
-            <Grid item xs={12} md={6}>
+            <Grid xs={12} md={6}>
               <TextField
                 fullWidth
                 label="Hora (HH:mm)"
@@ -185,7 +185,7 @@ export const CitasMedicasFormDialog = ({
               />
             </Grid>
 
-            <Grid item xs={12} md={6}>
+            <Grid xs={12} md={6}>
               <TextField
                 fullWidth
                 select
@@ -201,7 +201,7 @@ export const CitasMedicasFormDialog = ({
               </TextField>
             </Grid>
 
-            <Grid item xs={12}>
+            <Grid xs={12}>
               <TextField
                 fullWidth
                 label="Motivo / Observaciones"

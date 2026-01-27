@@ -40,6 +40,8 @@ export async function getMedicamentos(
       _id: string;
       nombre: string;
       descripcion?: string;
+      precio?: number | string;
+      stock?: number | string;
       createdAt?: string;
       updatedAt?: string;
     }) => ({

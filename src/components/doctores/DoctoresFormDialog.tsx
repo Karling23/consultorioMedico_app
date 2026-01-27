@@ -91,7 +91,7 @@ export function DoctoresFormDialog({
           id_especialidad: Number(idEspecialidad),
           horario_inicio: horarioInicio || undefined,
           horario_fin: horarioFin || undefined,
-          dias_disponibles: diasDisponibles || undefined,
+          dias_disponibles: diasDisponibles || "",
         });
       }
       onSuccess();
