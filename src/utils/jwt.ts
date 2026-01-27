@@ -31,3 +31,10 @@ export function decodeJwt(token: string): JwtPayload | null {
         return null;
     }
 }
+
+export function isJwtExpired(token: string): boolean {
+    const payload = decodeJwt(token);
+    if (!payload?.exp) return false;
+    const nowSeconds = Math.floor(Date.now() / 1000);
+    return payload.exp <= nowSeconds;
+}

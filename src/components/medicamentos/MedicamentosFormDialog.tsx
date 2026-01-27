@@ -8,6 +8,7 @@ import {
   TextField,
 } from "@mui/material";
 import { useState, type JSX } from "react";
+import { useEffect, useState, type JSX, type FormEvent } from "react";
 import { type MedicamentoDto } from "../../services/medicamentos.service";
 
 
@@ -37,6 +38,16 @@ export default function MedicamentoFormDialog({
   const [stock, setStock] = useState<number>(0);
 
   const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    if (open) {
+      setNombre(initial?.nombre || "");
+      setDescripcion(initial?.descripcion || "");
+      setPrecio(typeof initial?.precio === "number" ? initial.precio : Number(initial?.precio ?? 0));
+      setStock(typeof initial?.stock === "number" ? initial.stock : Number(initial?.stock ?? 0));
+    }
+  }, [open, initial]);
+
+  const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     onSubmit({
       nombre: nombre.trim(),

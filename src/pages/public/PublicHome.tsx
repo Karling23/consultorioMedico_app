@@ -93,7 +93,10 @@ export default function MedicamentosHome(): JSX.Element {
 
     if (loading) return <CircularProgress />;
     if (error) return <Alert severity="error">{error}</Alert>;
+import { Stack, Typography } from "@mui/material";
+import type { JSX } from "react";
 
+export default function PublicHome(): JSX.Element {
     return (
         <Stack spacing={3}>
         <Paper
@@ -166,6 +169,8 @@ export default function MedicamentosHome(): JSX.Element {
             </Stack>
             </>
         )}
+        <Stack spacing={2}>
+            <Typography variant="h4">Bienvenido a VitaCare</Typography>
         </Stack>
     );
 }

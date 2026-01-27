@@ -1,7 +1,8 @@
-import { createContext, useContext, useMemo, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { loginApi, registerApi } from "../services/auth.service";
-import { decodeJwt } from "../utils/jwt";
+import { decodeJwt, isJwtExpired } from "../utils/jwt";
+import { api } from "../services/api";
 
 type User = {
     id: number;
@@ -20,12 +21,20 @@ type AuthContextType = {
 const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-    const [token, setToken] = useState<string | null>(() =>
-        localStorage.getItem("auth_token")
-    );
+    const getStoredToken = () => {
+        const rawToken = localStorage.getItem("auth_token");
+        if (!rawToken) return null;
+        if (isJwtExpired(rawToken)) {
+            localStorage.removeItem("auth_token");
+            return null;
+        }
+        return rawToken;
+    };
+
+    const [token, setToken] = useState<string | null>(() => getStoredToken());
 
     const [user, setUser] = useState<User | null>(() => {
-        const rawToken = localStorage.getItem("auth_token");
+        const rawToken = getStoredToken();
         if (!rawToken) return null;
 
         const payload = decodeJwt(rawToken);
@@ -76,6 +85,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         localStorage.setItem("auth_token", token);
         };
+
+    useEffect(() => {
+        if (token) {
+            api.defaults.headers.common.Authorization = `Bearer ${token}`;
+        } else {
+            delete api.defaults.headers.common.Authorization;
+        }
+    }, [token]);
 
 
     const logout = () => {

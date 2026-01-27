@@ -24,6 +24,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
 
 import MedicamentoFormDialog from "../../components/medicamentos/MedicamentosFormDialog";
+import { useAuth } from "../../context/AuthContext";
 import {
     type MedicamentoDto,
     createMedicamento,
@@ -42,6 +43,7 @@ function useDebouncedValue<T>(value: T, delayMs: number): T {
 }
 
 export default function MedicamentosPage(): JSX.Element {
+    const { user } = useAuth();
     const [sp, setSp] = useSearchParams();
 
     const pageParam = Number(sp.get("page") || "1");
@@ -58,12 +60,15 @@ export default function MedicamentosPage(): JSX.Element {
     const [totalPages, setTotalPages] = useState(1);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [success, setSuccess] = useState<string | null>(null);
 
     const [open, setOpen] = useState(false);
     const [mode, setMode] = useState<"create" | "edit">("create");
     const [current, setCurrent] = useState<MedicamentoDto | null>(null);
     const [snackbarOpen, setSnackbarOpen] = useState(false);
     const [snackbarMsg, setSnackbarMsg] = useState("");
+
+    const isAdmin = (user?.rol || "").toLowerCase() === "admin";
 
     const queryKey = useMemo(
         () => ({
@@ -96,6 +101,7 @@ export default function MedicamentosPage(): JSX.Element {
         try {
         setLoading(true);
         setError(null);
+        setSuccess(null);
         const res = await getMedicamentos(queryKey);
         setItems(res.items);
         setTotalPages(res.meta.totalPages || 1);
@@ -111,12 +117,22 @@ export default function MedicamentosPage(): JSX.Element {
     }, [load]);
 
     const onCreate = () => {
+        if (!isAdmin) {
+        setError("No tienes permisos para crear medicamentos.");
+        return;
+        }
+        setSuccess(null);
         setMode("create");
         setCurrent(null);
         setOpen(true);
     };
 
     const onEdit = (m: MedicamentoDto) => {
+        if (!isAdmin) {
+        setError("No tienes permisos para editar medicamentos.");
+        return;
+        }
+        setSuccess(null);
         setMode("edit");
         setCurrent(m);
         setOpen(true);
@@ -125,9 +141,17 @@ export default function MedicamentosPage(): JSX.Element {
     const onSubmit = async (payload: {
         nombre: string;
         descripcion?: string;
+        precio: number;
+        stock: number;
     }) => {
         try {
         setError(null);
+        setSuccess(null);
+
+        if (!isAdmin) {
+            setError("No tienes permisos para guardar medicamentos.");
+            return;
+        }
 
         if (mode === "create") {
             await createMedicamento(payload);
@@ -136,6 +160,7 @@ export default function MedicamentosPage(): JSX.Element {
             await load();
             setSnackbarMsg("Medicamento creado");
             setSnackbarOpen(true);
+            setSuccess("Medicamento creado exitosamente.");
             return;
         }
 
@@ -146,6 +171,7 @@ export default function MedicamentosPage(): JSX.Element {
         await load();
         setSnackbarMsg("Medicamento actualizado");
         setSnackbarOpen(true);
+        setSuccess("Medicamento actualizado exitosamente.");
         } catch {
         setError("No se pudo guardar el medicamento.");
         }
@@ -154,10 +180,16 @@ export default function MedicamentosPage(): JSX.Element {
     const onDelete = async (id: string) => {
         try {
         setError(null);
+        setSuccess(null);
+        if (!isAdmin) {
+            setError("No tienes permisos para eliminar medicamentos.");
+            return;
+        }
         await deleteMedicamento(id);
         await load();
         setSnackbarMsg("Medicamento eliminado");
         setSnackbarOpen(true);
+        setSuccess("Medicamento eliminado del sistema.");
         } catch {
         setError("No se pudo eliminar el medicamento.");
         }
@@ -174,12 +206,15 @@ export default function MedicamentosPage(): JSX.Element {
             Medicamentos
             </Typography>
 
-            <Button variant="contained" startIcon={<AddIcon />} onClick={onCreate}>
-            Nuevo
-            </Button>
+            {isAdmin && (
+                <Button variant="contained" startIcon={<AddIcon />} onClick={onCreate}>
+                Nuevo
+                </Button>
+            )}
         </Stack>
 
         {error && <Alert severity="error">{error}</Alert>}
+        {success && <Alert severity="success">{success}</Alert>}
 
         <TextField
             label="Buscar (por nombre)"
@@ -201,6 +236,11 @@ export default function MedicamentosPage(): JSX.Element {
                     <TableCell sx={{ fontWeight: 600 }}>Nombre</TableCell>
                     <TableCell sx={{ fontWeight: 600 }}>Descripción</TableCell>
                     <TableCell align="right" sx={{ fontWeight: 600 }}>Acciones</TableCell>
+                    <TableCell>Nombre</TableCell>
+                    <TableCell>Descripción</TableCell>
+                    <TableCell>Precio</TableCell>
+                    <TableCell>Stock</TableCell>
+                    {isAdmin && <TableCell align="right">Acciones</TableCell>}
                     </TableRow>
                 </TableHead>
 
@@ -221,6 +261,18 @@ export default function MedicamentosPage(): JSX.Element {
                             </IconButton>
                         </Tooltip>
                         </TableCell>
+                        <TableCell>{typeof m.precio === "number" ? m.precio.toFixed(2) : "-"}</TableCell>
+                        <TableCell>{m.stock ?? "-"}</TableCell>
+                        {isAdmin && (
+                            <TableCell align="right">
+                            <IconButton onClick={() => onEdit(m)}>
+                                <EditIcon />
+                            </IconButton>
+                            <IconButton onClick={() => onDelete(m.id)}>
+                                <DeleteIcon />
+                            </IconButton>
+                            </TableCell>
+                        )}
                     </TableRow>
                     ))}
                 </TableBody>
