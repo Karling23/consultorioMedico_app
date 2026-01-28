@@ -115,7 +115,13 @@ export default function PrivateLayout(): JSX.Element {
         <Box sx={{ minHeight: "100vh" }}>
         <AppBar position="fixed">
             <Toolbar>
-            <IconButton color="inherit" edge="start" onClick={() => setOpen(true)} sx={{ mr: 2 }}>
+            <IconButton
+              color="inherit"
+              edge="start"
+              onClick={() => setOpen(true)}
+              sx={{ mr: 2 }}
+              aria-label="menu"
+            >
                 <MenuIcon />
             </IconButton>
 

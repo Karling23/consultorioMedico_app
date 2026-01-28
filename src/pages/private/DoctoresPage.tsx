@@ -82,7 +82,7 @@ export default function DoctoresPage() {
       setError("No tienes permisos para eliminar doctores.");
       return;
     }
-    if (!confirm("¿Eliminar este doctor?")) return;
+    if (!confirm("ï¿½Eliminar este doctor?")) return;
     try {
       setError(null);
       setSuccess(null);
@@ -129,7 +129,7 @@ export default function DoctoresPage() {
         <TextField
           fullWidth
           variant="outlined"
-          placeholder="Buscar por días disponibles..."
+          placeholder="Buscar por dï¿½as disponibles..."
           value={search}
           onChange={(e) => {
             setSearch(e.target.value);
@@ -155,7 +155,7 @@ export default function DoctoresPage() {
                 <TableCell sx={{ fontWeight: 600 }}>ID Especialidad</TableCell>
                 <TableCell sx={{ fontWeight: 600 }}>Horario inicio</TableCell>
                 <TableCell sx={{ fontWeight: 600 }}>Horario fin</TableCell>
-                <TableCell sx={{ fontWeight: 600 }}>Días disponibles</TableCell>
+                <TableCell sx={{ fontWeight: 600 }}>Dï¿½as disponibles</TableCell>
                 {isAdmin && (
                   <TableCell align="right" sx={{ fontWeight: 600 }}>
                     Acciones
