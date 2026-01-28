@@ -10,8 +10,7 @@ import {
   Card,
   CardContent,
   Avatar,
-  Chip,
-  Divider
+  Chip
 } from "@mui/material";
 import { Link as RouterLink } from "react-router-dom";
 import type { JSX } from "react";
