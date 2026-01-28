@@ -4,7 +4,6 @@ import {
   Button,
   CircularProgress,
   Container,
-  IconButton,
   Tooltip,
   Pagination,
   Paper,
@@ -22,6 +21,7 @@ import { useCallback, useEffect, useState } from "react";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
+import { ActionIconButton } from "../../components/common/ActionIconButton";
 import { useAuth } from "../../context/AuthContext";
 import {
   deleteEspecialidad,
@@ -168,14 +168,14 @@ export default function EspecialidadesPage() {
                   {isAdmin && (
                     <TableCell align="right">
                       <Tooltip title="Editar">
-                        <IconButton color="primary" onClick={() => handleEdit(row)}>
+                        <ActionIconButton color="primary" onClick={() => handleEdit(row)}>
                           <EditIcon />
-                        </IconButton>
+                        </ActionIconButton>
                       </Tooltip>
                       <Tooltip title="Eliminar">
-                        <IconButton color="error" onClick={() => handleDelete(row.id_especialidad)}>
+                        <ActionIconButton color="error" onClick={() => handleDelete(row.id_especialidad)}>
                           <DeleteIcon />
-                        </IconButton>
+                        </ActionIconButton>
                       </Tooltip>
                     </TableCell>
                   )}

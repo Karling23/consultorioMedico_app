@@ -4,7 +4,6 @@ import {
   Button,
   CircularProgress,
   Container,
-  IconButton,
   Pagination,
   Paper,
   Stack,
@@ -21,6 +20,7 @@ import { useCallback, useEffect, useState } from "react";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
+import { ActionIconButton } from "../../components/common/ActionIconButton";
 import { useAuth } from "../../context/AuthContext";
 
 import {
@@ -178,12 +178,12 @@ export default function CitasMedicasPage() {
                   <TableCell>{cita.motivo || "-"}</TableCell>
                   {isAdmin && (
                     <TableCell align="right">
-                      <IconButton color="primary" onClick={() => handleEdit(cita)}>
+                      <ActionIconButton color="primary" onClick={() => handleEdit(cita)}>
                         <EditIcon />
-                      </IconButton>
-                      <IconButton color="error" onClick={() => handleDelete(cita.id_cita)}>
+                      </ActionIconButton>
+                      <ActionIconButton color="error" onClick={() => handleDelete(cita.id_cita)}>
                         <DeleteIcon />
-                      </IconButton>
+                      </ActionIconButton>
                     </TableCell>
                   )}
                 </TableRow>

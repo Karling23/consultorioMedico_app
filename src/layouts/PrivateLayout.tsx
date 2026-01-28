@@ -41,12 +41,14 @@ type NavItem = {
 
 export default function PrivateLayout(): JSX.Element {
     const { user, logout } = useAuth();
-    const isAdmin = (user?.rol || "").toLowerCase() === "admin";
+    const role = (user?.rol || "").toLowerCase();
+    const isAdmin = role === "admin";
+    const isUser = role === "usuario";
     const [open, setOpen] = useState(false);
     const navigate = useNavigate();
     const location = useLocation();
 
-    const navItems: NavItem[] = [
+    const allNavItems: NavItem[] = [
         { label: "Inicio", to: "/dashboard", icon: <DashboardIcon /> },
         { label: "Medicamentos", to: "/dashboard/medicamentos", icon: <CategoryIcon /> },
         { label: "Especialidades", to: "/dashboard/especialidades", icon: <LocalHospitalIcon /> },
@@ -57,10 +59,18 @@ export default function PrivateLayout(): JSX.Element {
         { label: "Consultorios", to: "/dashboard/consultorios", icon: <MeetingRoomIcon /> },
         { label: "Recetas", to: "/dashboard/recetas", icon: <ReceiptLongIcon /> },
         { label: "Historial clinico", to: "/dashboard/historial-clinico", icon: <HistoryIcon /> },
-        ...(isAdmin
-            ? [{ label: "Usuarios", to: "/dashboard/users", icon: <GroupIcon /> }]
-            : []),
+        { label: "Usuarios", to: "/dashboard/users", icon: <GroupIcon /> },
     ];
+    const userAllowed = new Set([
+        "/dashboard/medicamentos",
+        "/dashboard/especialidades",
+        "/dashboard/consultorios",
+        "/dashboard/recetas",
+        "/dashboard/citas-medicas",
+    ]);
+    const navItems: NavItem[] = isAdmin
+        ? allNavItems
+        : allNavItems.filter((item) => (isUser ? userAllowed.has(item.to) : userAllowed.has(item.to)));
 
     const onGo = (to: string) => {
         navigate(to);

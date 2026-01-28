@@ -2,7 +2,6 @@ import {
     Alert,
     Button,
     CircularProgress,
-    IconButton,
     Tooltip,
     Pagination,
     Paper,    Stack,
@@ -20,6 +19,7 @@ import { useSearchParams } from "react-router-dom";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
+import { ActionIconButton } from "../../components/common/ActionIconButton";
 
 import MedicamentoFormDialog from "../../components/medicamentos/MedicamentosFormDialog";
 import { useAuth } from "../../context/AuthContext";
@@ -245,14 +245,14 @@ export default function MedicamentosPage(): JSX.Element {
                         {isAdmin && (
                           <TableCell align="right">
                             <Tooltip title="Editar">
-                              <IconButton onClick={() => onEdit(m)} color="primary">
+                              <ActionIconButton onClick={() => onEdit(m)} color="primary">
                                 <EditIcon />
-                              </IconButton>
+                              </ActionIconButton>
                             </Tooltip>
                             <Tooltip title="Eliminar">
-                              <IconButton onClick={() => onDelete(m.id)} color="error">
+                              <ActionIconButton onClick={() => onDelete(m.id)} color="error">
                                 <DeleteIcon />
-                              </IconButton>
+                              </ActionIconButton>
                             </Tooltip>
                           </TableCell>
                         )}

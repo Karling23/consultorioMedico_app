@@ -10,30 +10,165 @@ import {
   Typography,
   useTheme,
 } from "@mui/material";
-import type { JSX } from "react";
+import { useEffect, useMemo, useState, type JSX } from "react";
 import LocalHospitalIcon from "@mui/icons-material/LocalHospital";
+import CategoryIcon from "@mui/icons-material/Category";
 import PeopleIcon from "@mui/icons-material/People";
 import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
 import MeetingRoomIcon from "@mui/icons-material/MeetingRoom";
 import EventIcon from "@mui/icons-material/Event";
-import TrendingUpIcon from "@mui/icons-material/TrendingUp";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
+import { getCitasMedicas, type CitaMedicaDto } from "../../services/citas-medicas.service";
+import { getPacientes } from "../../services/pacientes.service";
+import { getRecetas } from "../../services/recetas.service";
+import { getMedicamentos } from "../../services/medicamentos.service";
+
+type CitasPage<T> = { items: T[]; meta: { totalPages?: number } };
+
+async function fetchAllPages<T>(
+  fetchPage: (page: number, limit: number) => Promise<CitasPage<T>>
+): Promise<T[]> {
+  const items: T[] = [];
+  let page = 1;
+  const limit = 100;
+  while (true) {
+    const res = await fetchPage(page, limit);
+    items.push(...res.items);
+    const totalPages = res.meta.totalPages ?? 1;
+    if (page >= totalPages || res.items.length < limit) break;
+    page += 1;
+  }
+  return items;
+}
 
 export default function DashboardHome(): JSX.Element {
   const navigate = useNavigate();
   const theme = useTheme();
   const { user } = useAuth();
+  const role = (user?.rol || "").toLowerCase();
+  const isAdmin = role === "admin";
+  const isUser = role === "usuario" || role === "paciente";
+
+  const [citas, setCitas] = useState<CitaMedicaDto[]>([]);
+  const [citasLoading, setCitasLoading] = useState(false);
+  const [statsLoading, setStatsLoading] = useState(false);
+  const [statsCounts, setStatsCounts] = useState({
+    pacientes: 0,
+    citas: 0,
+    recetas: 0,
+  });
+  const [adminActivity, setAdminActivity] = useState<
+    { id: string; title: string; subtitle: string; timeMs: number }[]
+  >([]);
+
+  useEffect(() => {
+    let active = true;
+    const loadCitas = async () => {
+      setCitasLoading(true);
+      try {
+        const all = await fetchAllPages((page, limit) => getCitasMedicas({ page, limit }));
+        if (active) setCitas(all);
+      } catch {
+        if (active) setCitas([]);
+      } finally {
+        if (active) setCitasLoading(false);
+      }
+    };
+    loadCitas();
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!isAdmin) return;
+    let active = true;
+    const loadStats = async () => {
+      setStatsLoading(true);
+      try {
+        const [pacientesRes, citasRes, recetasRes, medicamentosRes] = await Promise.all([
+          getPacientes({ page: 1, limit: 5 }),
+          getCitasMedicas({ page: 1, limit: 5 }),
+          getRecetas({ page: 1, limit: 5 }),
+          getMedicamentos({ page: 1, limit: 5, sort: "createdAt", order: "DESC" }),
+        ]);
+        if (!active) return;
+        setStatsCounts({
+          pacientes: pacientesRes.meta.totalItems || pacientesRes.items.length || 0,
+          citas: citasRes.meta.totalItems || citasRes.items.length || 0,
+          recetas: recetasRes.meta.totalItems || recetasRes.items.length || 0,
+        });
+
+        const meds = medicamentosRes.items.map((m) => ({
+          id: `med-${m.id}`,
+          title: "Medicamento registrado",
+          subtitle: m.nombre,
+          timeMs: m.createdAt ? Date.parse(m.createdAt) : 0,
+        }));
+        const citas = citasRes.items.map((c) => ({
+          id: `cita-${c.id_cita}`,
+          title: "Cita generada",
+          subtitle: `Paciente ${c.id_paciente} - ${c.fecha_cita} ${c.hora_cita} - ${c.estado}`,
+          timeMs: c.fecha_creacion
+            ? Date.parse(c.fecha_creacion)
+            : Date.parse(`${c.fecha_cita}T${c.hora_cita || "00:00"}:00`),
+        }));
+        const recetas = recetasRes.items.map((r) => ({
+          id: `receta-${r.id_receta}`,
+          title: "Receta emitida",
+          subtitle: `#${r.id_receta} - ${r.fecha_emision || "sin fecha"}`,
+          timeMs: r.fecha_emision ? Date.parse(r.fecha_emision) : 0,
+        }));
+        const pacientes = pacientesRes.items.map((p) => ({
+          id: `paciente-${p.id_paciente}`,
+          title: "Paciente registrado",
+          subtitle: `#${p.id_paciente} - ${p.cedula}`,
+          timeMs: 0,
+        }));
+
+        const combined = [...meds, ...citas, ...recetas, ...pacientes]
+          .sort((a, b) => b.timeMs - a.timeMs)
+          .slice(0, 6);
+        setAdminActivity(combined);
+      } catch {
+        if (active) {
+          setStatsCounts({ pacientes: 0, citas: 0, recetas: 0 });
+          setAdminActivity([]);
+        }
+      } finally {
+        if (active) setStatsLoading(false);
+      }
+    };
+    loadStats();
+    return () => {
+      active = false;
+    };
+  }, [isAdmin]);
+
+  const todayIso = new Date().toISOString().slice(0, 10);
+  const citasHoy = useMemo(
+    () => citas.filter((c) => (c.fecha_cita || "").slice(0, 10) === todayIso).length,
+    [citas, todayIso]
+  );
+  const recentCitas = useMemo(() => {
+    const toDate = (c: CitaMedicaDto) => {
+      const base = c.fecha_cita ? `${c.fecha_cita}T${c.hora_cita || "00:00"}:00` : "";
+      const created = c.fecha_creacion ? c.fecha_creacion : base;
+      const parsed = Date.parse(created);
+      return Number.isNaN(parsed) ? 0 : parsed;
+    };
+    return [...citas].sort((a, b) => toDate(b) - toDate(a)).slice(0, 6);
+  }, [citas]);
 
   const stats = [
-    { label: "Pacientes Activos", value: "1,234", icon: <PeopleIcon />, color: theme.palette.primary.main },
-    { label: "Citas Hoy", value: "42", icon: <EventIcon />, color: theme.palette.secondary.main },
-    { label: "Recetas Emitidas", value: "89", icon: <ReceiptLongIcon />, color: "#e76f51" },
-    { label: "Disponibilidad", value: "98%", icon: <TrendingUpIcon />, color: "#2a9d8f" },
+    { label: "Pacientes registrados", value: statsCounts.pacientes, icon: <PeopleIcon />, color: theme.palette.primary.main },
+    { label: "Citas generadas", value: statsCounts.citas, icon: <EventIcon />, color: theme.palette.secondary.main },
+    { label: "Recetas emitidas", value: statsCounts.recetas, icon: <ReceiptLongIcon />, color: "#e76f51" },
   ];
 
-  const quickActions = [
+  const adminQuickActions = [
     { label: "Doctores", desc: "Gestión de personal médico", icon: <PeopleIcon fontSize="large" />, to: "/dashboard/doctores", color: "primary.light" },
     { label: "Citas Médicas", desc: "Agenda y programación", icon: <EventIcon fontSize="large" />, to: "/dashboard/citas-medicas", color: "secondary.light" },
     { label: "Pacientes", desc: "Historial y datos", icon: <PeopleIcon fontSize="large" />, to: "/dashboard/pacientes", color: "info.light" },
@@ -41,6 +176,12 @@ export default function DashboardHome(): JSX.Element {
     { label: "Consultorios", desc: "Administración de espacios", icon: <MeetingRoomIcon fontSize="large" />, to: "/dashboard/consultorios", color: "warning.light" },
     { label: "Especialidades", desc: "Catálogo de servicios", icon: <LocalHospitalIcon fontSize="large" />, to: "/dashboard/especialidades", color: "error.light" },
   ];
+  const userQuickActions = [
+    { label: "Medicamentos", desc: "Catalogo de medicamentos", icon: <CategoryIcon fontSize="large" />, to: "/dashboard/medicamentos", color: "primary.light" },
+    { label: "Citas Médicas", desc: "Agenda y programación", icon: <EventIcon fontSize="large" />, to: "/dashboard/citas-medicas", color: "secondary.light" },
+    { label: "Recetas", desc: "Emisión y consulta", icon: <ReceiptLongIcon fontSize="large" />, to: "/dashboard/recetas", color: "success.light" },
+  ];
+  const quickActions = isUser ? userQuickActions : adminQuickActions;
 
   return (
     <Stack spacing={4}>
@@ -73,7 +214,7 @@ export default function DashboardHome(): JSX.Element {
             }}
             onClick={() => navigate("/dashboard/citas-medicas")}
           >
-            Ver Agenda de Hoy
+            {isUser ? "Ver proximas citas medicas" : "Ver Agenda de Hoy"}
           </Button>
         </Box>
         {/* Abstract Background Decoration */}
@@ -109,11 +250,42 @@ export default function DashboardHome(): JSX.Element {
           display: "grid",
           gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr", md: "repeat(4, 1fr)" },
           gap: 3,
+          justifyContent: "center",
+          justifyItems: "center",
         }}
       >
-        {stats.map((stat, index) => (
+        {isAdmin ? (
+          stats.map((stat, index) => (
+            <Paper
+              key={index}
+              elevation={0}
+              variant="outlined"
+              sx={{
+                p: 3,
+                borderRadius: 3,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                height: "100%",
+                width: "100%",
+                maxWidth: 360,
+              }}
+            >
+              <Box>
+                <Typography variant="body2" color="text.secondary" fontWeight="bold">
+                  {stat.label}
+                </Typography>
+                <Typography variant="h4" fontWeight="bold" sx={{ mt: 1 }}>
+                  {statsLoading ? "..." : String(stat.value)}
+                </Typography>
+              </Box>
+              <Avatar sx={{ bgcolor: `${stat.color}20`, color: stat.color, width: 56, height: 56 }}>
+                {stat.icon}
+              </Avatar>
+            </Paper>
+          ))
+        ) : (
           <Paper
-            key={index}
             elevation={0}
             variant="outlined"
             sx={{
@@ -127,17 +299,24 @@ export default function DashboardHome(): JSX.Element {
           >
             <Box>
               <Typography variant="body2" color="text.secondary" fontWeight="bold">
-                {stat.label}
+                Citas Hoy
               </Typography>
               <Typography variant="h4" fontWeight="bold" sx={{ mt: 1 }}>
-                {stat.value}
+                {citasLoading ? "..." : String(citasHoy)}
               </Typography>
             </Box>
-            <Avatar sx={{ bgcolor: `${stat.color}20`, color: stat.color, width: 56, height: 56 }}>
-              {stat.icon}
+            <Avatar
+              sx={{
+                bgcolor: `${theme.palette.secondary.main}20`,
+                color: theme.palette.secondary.main,
+                width: 56,
+                height: 56,
+              }}
+            >
+              <EventIcon />
             </Avatar>
           </Paper>
-        ))}
+        )}
       </Box>
 
       <Typography variant="h5" fontWeight="bold" sx={{ mt: 2 }}>
@@ -211,33 +390,73 @@ export default function DashboardHome(): JSX.Element {
             <Button size="small">Ver todo</Button>
           </Stack>
           <Stack spacing={2}>
-            {[1, 2, 3].map((i) => (
-              <Box
-                key={i}
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 2,
-                  p: 1,
-                  "&:hover": { bgcolor: "grey.50", borderRadius: 2 },
-                }}
-              >
-                <Avatar sx={{ bgcolor: "grey.100", color: "grey.600" }}>
-                  <AccessTimeIcon fontSize="small" />
-                </Avatar>
-                <Box sx={{ flexGrow: 1 }}>
-                  <Typography variant="body2" fontWeight="bold">
-                    Nueva Cita Agendada
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    Paciente: Juan Pérez - Hace {i * 15} min
-                  </Typography>
+            {isAdmin ? (
+              adminActivity.length === 0 ? (
+                <Typography variant="body2" color="text.secondary">
+                  No hay actividad reciente.
+                </Typography>
+              ) : (
+                adminActivity.map((item) => (
+                  <Box
+                    key={item.id}
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 2,
+                      p: 1,
+                      "&:hover": { bgcolor: "grey.50", borderRadius: 2 },
+                    }}
+                  >
+                    <Avatar sx={{ bgcolor: "grey.100", color: "grey.600" }}>
+                      <AccessTimeIcon fontSize="small" />
+                    </Avatar>
+                    <Box sx={{ flexGrow: 1 }}>
+                      <Typography variant="body2" fontWeight="bold">
+                        {item.title}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        {item.subtitle}
+                      </Typography>
+                    </Box>
+                    <Button size="small" variant="text">
+                      Ver
+                    </Button>
+                  </Box>
+                ))
+              )
+            ) : recentCitas.length === 0 ? (
+              <Typography variant="body2" color="text.secondary">
+                No hay citas registradas.
+              </Typography>
+            ) : (
+              recentCitas.map((cita) => (
+                <Box
+                  key={cita.id_cita}
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 2,
+                    p: 1,
+                    "&:hover": { bgcolor: "grey.50", borderRadius: 2 },
+                  }}
+                >
+                  <Avatar sx={{ bgcolor: "grey.100", color: "grey.600" }}>
+                    <AccessTimeIcon fontSize="small" />
+                  </Avatar>
+                  <Box sx={{ flexGrow: 1 }}>
+                    <Typography variant="body2" fontWeight="bold">
+                      Cita Generada
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      Paciente {cita.id_paciente} - {cita.fecha_cita} {cita.hora_cita} - {cita.estado}
+                    </Typography>
+                  </Box>
+                  <Button size="small" variant="text" onClick={() => navigate("/dashboard/citas-medicas")}>
+                    Ver
+                  </Button>
                 </Box>
-                <Button size="small" variant="text">
-                  Ver
-                </Button>
-              </Box>
-            ))}
+              ))
+            )}
           </Stack>
         </Paper>
         <Paper

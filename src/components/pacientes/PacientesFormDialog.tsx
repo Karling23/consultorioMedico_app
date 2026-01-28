@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent, type JSX } from "react";
 import {
   Alert,
+  Autocomplete,
   Button,
   CircularProgress,
   Dialog,
@@ -16,6 +17,7 @@ import {
   updatePaciente,
   type PacienteDto,
 } from "../../services/pacientes.service";
+import { getUsuarios, type UsuarioDto } from "../../services/usuarios.service";
 
 type ApiError = {
   response?: {
@@ -51,11 +53,12 @@ export const PacientesFormDialog = ({
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const isEditMode = !!initialData;
 
-  const [idUsuario, setIdUsuario] = useState<number>(0);
+  const [idUsuario, setIdUsuario] = useState<number | null>(null);
   const [cedula, setCedula] = useState("");
   const [fechaNacimiento, setFechaNacimiento] = useState("");
   const [telefono, setTelefono] = useState("");
   const [direccion, setDireccion] = useState("");
+  const [usuarios, setUsuarios] = useState<UsuarioDto[]>([]);
 
   useEffect(() => {
     if (!open) return;
@@ -69,13 +72,25 @@ export const PacientesFormDialog = ({
       setTelefono(initialData.telefono || "");
       setDireccion(initialData.direccion || "");
     } else {
-      setIdUsuario(0);
+      setIdUsuario(null);
       setCedula("");
       setFechaNacimiento("");
       setTelefono("");
       setDireccion("");
     }
   }, [open, initialData]);
+
+  useEffect(() => {
+    if (!open) return;
+    (async () => {
+      try {
+        const res = await getUsuarios({ page: 1, limit: 100 });
+        setUsuarios(res.items);
+      } catch {
+        setUsuarios([]);
+      }
+    })();
+  }, [open]);
 
   const validate = (): FieldErrors => {
     const errors: FieldErrors = {};
@@ -142,14 +157,31 @@ export const PacientesFormDialog = ({
 
           <Grid container spacing={2}>
             <Grid size={{ xs: 12, md: 6 }}>
-              <TextField
-                fullWidth
-                label="ID Usuario (Login)"
-                type="number"
-                value={idUsuario || ""}
-                onChange={(e) => setIdUsuario(Number(e.target.value))}
-                error={!!fieldErrors.id_usuario}
-                helperText={fieldErrors.id_usuario}
+              <Autocomplete
+                options={usuarios.map((u) => ({
+                  id: u.id_usuario,
+                  label: `#${u.id_usuario} - ${u.nombre_usuario}`,
+                }))}
+                value={
+                  idUsuario === null
+                    ? null
+                    : usuarios
+                        .map((u) => ({ id: u.id_usuario, label: `#${u.id_usuario} - ${u.nombre_usuario}` }))
+                        .find((o) => o.id === idUsuario) || { id: idUsuario, label: `#${idUsuario}` }
+                }
+                onChange={(_, option) => setIdUsuario(option?.id ?? null)}
+                isOptionEqualToValue={(option, value) => option.id === value.id}
+                getOptionLabel={(option) => option.label}
+                openOnFocus
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="ID Usuario (Login)"
+                    error={!!fieldErrors.id_usuario}
+                    helperText={fieldErrors.id_usuario}
+                    required
+                  />
+                )}
               />
             </Grid>
 

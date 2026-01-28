@@ -16,12 +16,12 @@ import {
   TableRow,
   TextField,
   Typography,
-  IconButton,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import { useCallback, useEffect, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
+import { ActionIconButton } from "../../components/common/ActionIconButton";
 import {
   deleteDoctoresConsultorio,
   getDoctoresConsultorios,
@@ -165,14 +165,14 @@ export default function DoctoresConsultoriosPage() {
                   {isAdmin && (
                     <TableCell align="right">
                       <Tooltip title="Editar">
-                        <IconButton color="primary" onClick={() => handleEdit(row)}>
+                        <ActionIconButton color="primary" onClick={() => handleEdit(row)}>
                           <EditIcon />
-                        </IconButton>
+                        </ActionIconButton>
                       </Tooltip>
                       <Tooltip title="Eliminar">
-                        <IconButton color="error" onClick={() => handleDelete(row.id)}>
+                        <ActionIconButton color="error" onClick={() => handleDelete(row.id)}>
                           <DeleteIcon />
-                        </IconButton>
+                        </ActionIconButton>
                       </Tooltip>
                     </TableCell>
                   )}

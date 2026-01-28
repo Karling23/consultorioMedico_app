@@ -1,10 +1,11 @@
-import {Alert,Box,Button,CircularProgress,Container,IconButton,Pagination,Paper,Stack,Table,TableBody,
+import {Alert,Box,Button,CircularProgress,Container,Pagination,Paper,Stack,Table,TableBody,
 TableCell,TableContainer,TableHead,TableRow,TextField,
 Typography,} from "@mui/material";
 import { useCallback, useEffect, useState } from "react";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
+import { ActionIconButton } from "../../components/common/ActionIconButton";
 
 import {deletePaciente,getPacientes,type PacienteDto,type PaginatedPacientes,} from "../../services/pacientes.service";
 import { PacientesFormDialog } from "../../components/pacientes/PacientesFormDialog";
@@ -167,12 +168,12 @@ export default function PacientesPage() {
                   {/* 5. SOLO MOSTRAR BOTONES EDITAR/BORRAR SI ES ADMIN */}
                   {isAdmin && (
                     <TableCell align="right">
-                      <IconButton color="primary" onClick={() => handleEdit(paciente)}>
+                      <ActionIconButton color="primary" onClick={() => handleEdit(paciente)}>
                         <EditIcon />
-                      </IconButton>
-                      <IconButton color="error" onClick={() => handleDelete(paciente.id_paciente)}>
+                      </ActionIconButton>
+                      <ActionIconButton color="error" onClick={() => handleDelete(paciente.id_paciente)}>
                         <DeleteIcon />
-                      </IconButton>
+                      </ActionIconButton>
                     </TableCell>
                   )}
 

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import {
   Alert,
+  Autocomplete,
   Button,
   CircularProgress,
   Dialog,
@@ -8,7 +9,6 @@ import {
   DialogContent,
   DialogTitle,
   Stack,
-  MenuItem,
   TextField,
 } from "@mui/material";
 import {
@@ -38,8 +38,8 @@ export function DoctoresConsultoriosFormDialog({
 }: Props) {
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [idDoctor, setIdDoctor] = useState<number | "">("");
-  const [idConsultorio, setIdConsultorio] = useState<number | "">("");
+  const [idDoctor, setIdDoctor] = useState<number | null>(null);
+  const [idConsultorio, setIdConsultorio] = useState<number | null>(null);
   const isEditMode = !!initialData;
   const [doctores, setDoctores] = useState<DoctorDto[]>([]);
   const [consultorios, setConsultorios] = useState<ConsultorioDto[]>([]);
@@ -47,8 +47,8 @@ export function DoctoresConsultoriosFormDialog({
   useEffect(() => {
     if (open) {
       setErrorMessage(null);
-      setIdDoctor(initialData?.id_doctor ?? "");
-      setIdConsultorio(initialData?.id_consultorio ?? "");
+      setIdDoctor(initialData?.id_doctor ?? null);
+      setIdConsultorio(initialData?.id_consultorio ?? null);
     }
   }, [open, initialData]);
 
@@ -72,7 +72,7 @@ export function DoctoresConsultoriosFormDialog({
   }, [open]);
 
   const onSubmit = async () => {
-    if (idDoctor === "" || idConsultorio === "") {
+    if (idDoctor === null || idConsultorio === null) {
       setErrorMessage("Debe completar ambos IDs.");
       return;
     }
@@ -81,13 +81,13 @@ export function DoctoresConsultoriosFormDialog({
     try {
       if (isEditMode && initialData) {
         await updateDoctoresConsultorio(initialData.id, {
-          id_doctor: Number(idDoctor),
-          id_consultorio: Number(idConsultorio),
+          id_doctor: idDoctor,
+          id_consultorio: idConsultorio,
         });
       } else {
         await createDoctoresConsultorio({
-          id_doctor: Number(idDoctor),
-          id_consultorio: Number(idConsultorio),
+          id_doctor: idDoctor,
+          id_consultorio: idConsultorio,
         });
       }
       onSuccess();
@@ -115,36 +115,46 @@ export function DoctoresConsultoriosFormDialog({
           </Alert>
         )}
         <Stack spacing={2}>
-          <TextField
-            fullWidth
-            select
-            label="Doctor"
-            value={idDoctor}
-            onChange={(e) => setIdDoctor(e.target.value === "" ? "" : Number(e.target.value))}
-            required
-          >
-            <MenuItem value="">Selecciona un doctor</MenuItem>
-            {doctores.map((d) => (
-              <MenuItem key={d.id_doctor} value={d.id_doctor}>
-                #{d.id_doctor} - {d.dias_disponibles}
-              </MenuItem>
-            ))}
-          </TextField>
-          <TextField
-            fullWidth
-            select
-            label="Consultorio"
-            value={idConsultorio}
-            onChange={(e) => setIdConsultorio(e.target.value === "" ? "" : Number(e.target.value))}
-            required
-          >
-            <MenuItem value="">Selecciona un consultorio</MenuItem>
-            {consultorios.map((c) => (
-              <MenuItem key={c.id_consultorio} value={c.id_consultorio}>
-                #{c.id_consultorio} - {c.nombre}
-              </MenuItem>
-            ))}
-          </TextField>
+          <Autocomplete
+            options={doctores.map((d) => ({
+              id: d.id_doctor,
+              label: `#${d.id_doctor} - Usuario ${d.id_usuario}`,
+            }))}
+            value={
+              idDoctor === null
+                ? null
+                : doctores
+                    .map((d) => ({ id: d.id_doctor, label: `#${d.id_doctor} - Usuario ${d.id_usuario}` }))
+                    .find((o) => o.id === idDoctor) || { id: idDoctor, label: `#${idDoctor}` }
+            }
+            onChange={(_, option) => setIdDoctor(option?.id ?? null)}
+            isOptionEqualToValue={(option, value) => option.id === value.id}
+            getOptionLabel={(option) => option.label}
+            openOnFocus
+            renderInput={(params) => (
+              <TextField {...params} label="Doctor" required />
+            )}
+          />
+          <Autocomplete
+            options={consultorios.map((c) => ({
+              id: c.id_consultorio,
+              label: `#${c.id_consultorio} - ${c.nombre}`,
+            }))}
+            value={
+              idConsultorio === null
+                ? null
+                : consultorios
+                    .map((c) => ({ id: c.id_consultorio, label: `#${c.id_consultorio} - ${c.nombre}` }))
+                    .find((o) => o.id === idConsultorio) || { id: idConsultorio, label: `#${idConsultorio}` }
+            }
+            onChange={(_, option) => setIdConsultorio(option?.id ?? null)}
+            isOptionEqualToValue={(option, value) => option.id === value.id}
+            getOptionLabel={(option) => option.label}
+            openOnFocus
+            renderInput={(params) => (
+              <TextField {...params} label="Consultorio" required />
+            )}
+          />
         </Stack>
       </DialogContent>
       <DialogActions>
@@ -154,7 +164,7 @@ export function DoctoresConsultoriosFormDialog({
         <Button
           onClick={onSubmit}
           variant="contained"
-          disabled={loading || idDoctor === "" || idConsultorio === ""}
+          disabled={loading || idDoctor === null || idConsultorio === null}
           startIcon={loading ? <CircularProgress size={20} /> : null}
         >
           {isEditMode ? "Actualizar" : "Guardar"}

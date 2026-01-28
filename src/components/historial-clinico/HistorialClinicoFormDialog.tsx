@@ -1,4 +1,5 @@
 import {
+    Autocomplete,
     Button,
     Dialog,
     DialogActions,
@@ -9,6 +10,7 @@ import {
 } from "@mui/material";
 import { useEffect, useState, type JSX, type FormEvent } from "react";
 import type { HistorialClinicoDto } from "../../services/historial-clinico.service";
+import { getCitasMedicas, type CitaMedicaDto } from "../../services/citas-medicas.service";
 
 type Props = {
     open: boolean;
@@ -30,21 +32,34 @@ export default function HistorialClinicoFormDialog({
     onClose,
     onSubmit,
 }: Props): JSX.Element {
-    const [idCita, setIdCita] = useState<number>(0);
+    const [idCita, setIdCita] = useState<number | null>(null);
     const [diagnostico, setDiagnostico] = useState("");
     const [tratamiento, setTratamiento] = useState("");
     const [observaciones, setObservaciones] = useState("");
+    const [citas, setCitas] = useState<CitaMedicaDto[]>([]);
 
     useEffect(() => {
         if (open) {
             /* eslint-disable react-hooks/set-state-in-effect */
-            setIdCita(Number(initial?.id_cita ?? 0));
+            setIdCita(initial?.id_cita ? Number(initial.id_cita) : null);
             setDiagnostico(initial?.diagnostico || "");
             setTratamiento(initial?.tratamiento || "");
             setObservaciones(initial?.observaciones || "");
             /* eslint-enable react-hooks/set-state-in-effect */
         }
     }, [open, initial]);
+
+    useEffect(() => {
+        if (!open) return;
+        (async () => {
+            try {
+                const res = await getCitasMedicas({ page: 1, limit: 100 });
+                setCitas(res.items);
+            } catch {
+                setCitas([]);
+            }
+        })();
+    }, [open]);
 
     const handleSubmit = (e: FormEvent) => {
         e.preventDefault();
@@ -64,14 +79,29 @@ export default function HistorialClinicoFormDialog({
 
             <DialogContent>
                 <Stack spacing={2} component="form" onSubmit={handleSubmit} sx={{ mt: 1 }}>
-                    <TextField
-                        label="Id cita"
-                        type="number"
-                        inputProps={{ min: 1 }}
-                        value={idCita}
-                        onChange={(e) => setIdCita(Number(e.target.value))}
-                        required
+                    <Autocomplete
+                        options={citas.map((c) => ({
+                            id: c.id_cita,
+                            label: `#${c.id_cita} - ${c.fecha_cita} ${c.hora_cita}`,
+                        }))}
+                        value={
+                            idCita === null
+                                ? null
+                                : citas
+                                      .map((c) => ({
+                                          id: c.id_cita,
+                                          label: `#${c.id_cita} - ${c.fecha_cita} ${c.hora_cita}`,
+                                      }))
+                                      .find((o) => o.id === idCita) || { id: idCita, label: `#${idCita}` }
+                        }
+                        onChange={(_, option) => setIdCita(option?.id ?? null)}
+                        isOptionEqualToValue={(option, value) => option.id === value.id}
+                        getOptionLabel={(option) => option.label}
+                        openOnFocus
                         disabled={mode === "edit"}
+                        renderInput={(params) => (
+                            <TextField {...params} label="Id cita" required />
+                        )}
                     />
 
                     <TextField

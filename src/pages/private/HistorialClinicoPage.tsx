@@ -2,7 +2,6 @@ import {
     Alert,
     Button,
     CircularProgress,
-    IconButton,
     Pagination,
     Paper,
     Stack,
@@ -22,6 +21,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
 
 import { useAuth } from "../../context/AuthContext";
+import { ActionIconButton } from "../../components/common/ActionIconButton";
 import HistorialClinicoFormDialog from "../../components/historial-clinico/HistorialClinicoFormDialog";
 import {
     createHistorialClinico,
@@ -324,12 +324,12 @@ export default function HistorialClinicoPage(): JSX.Element {
                                         <TableCell>{h.observaciones}</TableCell>
                                         {isAdmin && (
                                             <TableCell align="right">
-                                                <IconButton onClick={() => onEdit(h)}>
+                                                <ActionIconButton color="primary" onClick={() => onEdit(h)}>
                                                     <EditIcon />
-                                                </IconButton>
-                                                <IconButton onClick={() => onDelete(h.id)}>
+                                                </ActionIconButton>
+                                                <ActionIconButton color="error" onClick={() => onDelete(h.id)}>
                                                     <DeleteIcon />
-                                                </IconButton>
+                                                </ActionIconButton>
                                             </TableCell>
                                         )}
                                     </TableRow>

@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent, type JSX } from "react";
 import {
   Alert,
+  Autocomplete,
   Button,
   Dialog,
   DialogActions,
@@ -17,6 +18,9 @@ import {
   createCitaMedica,
   updateCitaMedica,
 } from "../../services/citas-medicas.service";
+import { getPacientes, type PacienteDto } from "../../services/pacientes.service";
+import { getDoctores, type DoctorDto } from "../../services/doctores.service";
+import { getConsultorios, type ConsultorioDto } from "../../services/consultorios.service";
 
 type ApiError = {
   response?: {
@@ -43,13 +47,16 @@ export const CitasMedicasFormDialog = ({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const isEditMode = !!initialData;
 
-  const [idPaciente, setIdPaciente] = useState<number>(0);
-  const [idDoctor, setIdDoctor] = useState<number>(0);
-  const [idConsultorio, setIdConsultorio] = useState<number>(0);
+  const [idPaciente, setIdPaciente] = useState<number | null>(null);
+  const [idDoctor, setIdDoctor] = useState<number | null>(null);
+  const [idConsultorio, setIdConsultorio] = useState<number | null>(null);
   const [fechaCita, setFechaCita] = useState("");
   const [horaCita, setHoraCita] = useState("");
   const [estado, setEstado] = useState<"Pendiente" | "Confirmada" | "Cancelada">("Pendiente");
   const [motivo, setMotivo] = useState("");
+  const [pacientes, setPacientes] = useState<PacienteDto[]>([]);
+  const [doctores, setDoctores] = useState<DoctorDto[]>([]);
+  const [consultorios, setConsultorios] = useState<ConsultorioDto[]>([]);
 
   useEffect(() => {
     if (!open) return;
@@ -72,15 +79,35 @@ export const CitasMedicasFormDialog = ({
       }
       setMotivo(initialData.motivo || "");
     } else {
-      setIdPaciente(0);
-      setIdDoctor(0);
-      setIdConsultorio(0);
+      setIdPaciente(null);
+      setIdDoctor(null);
+      setIdConsultorio(null);
       setFechaCita("");
       setHoraCita("");
       setEstado("Pendiente");
       setMotivo("");
     }
   }, [open, initialData]);
+
+  useEffect(() => {
+    if (!open) return;
+    (async () => {
+      try {
+        const [pacientesRes, doctoresRes, consultoriosRes] = await Promise.all([
+          getPacientes({ page: 1, limit: 100 }),
+          getDoctores({ page: 1, limit: 100 }),
+          getConsultorios({ page: 1, limit: 100 }),
+        ]);
+        setPacientes(pacientesRes.items);
+        setDoctores(doctoresRes.items);
+        setConsultorios(consultoriosRes.items);
+      } catch {
+        setPacientes([]);
+        setDoctores([]);
+        setConsultorios([]);
+      }
+    })();
+  }, [open]);
 
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -95,9 +122,9 @@ export const CitasMedicasFormDialog = ({
       }
 
       const payload: Partial<CitaMedicaDto> = {
-        id_paciente: Number(idPaciente),
-        id_doctor: Number(idDoctor),
-        id_consultorio: Number(idConsultorio),
+        id_paciente: idPaciente,
+        id_doctor: idDoctor,
+        id_consultorio: idConsultorio,
         fecha_cita: fechaCita,
         hora_cita: horaCita,
         estado,
@@ -136,30 +163,69 @@ export const CitasMedicasFormDialog = ({
 
           <Grid container spacing={2}>
             <Grid size={{ xs: 12, md: 4 }}>
-              <TextField
-                fullWidth
-                label="ID Paciente"
-                type="number"
-                value={idPaciente || ""}
-                onChange={(e) => setIdPaciente(Number(e.target.value))}
+              <Autocomplete
+                options={pacientes.map((p) => ({
+                  id: p.id_paciente,
+                  label: `#${p.id_paciente} - ${p.cedula}`,
+                }))}
+                value={
+                  idPaciente === null
+                    ? null
+                    : pacientes
+                        .map((p) => ({ id: p.id_paciente, label: `#${p.id_paciente} - ${p.cedula}` }))
+                        .find((o) => o.id === idPaciente) || { id: idPaciente, label: `#${idPaciente}` }
+                }
+                onChange={(_, option) => setIdPaciente(option?.id ?? null)}
+                isOptionEqualToValue={(option, value) => option.id === value.id}
+                getOptionLabel={(option) => option.label}
+                openOnFocus
+                renderInput={(params) => (
+                  <TextField {...params} label="Paciente" required />
+                )}
               />
             </Grid>
             <Grid size={{ xs: 12, md: 4 }}>
-              <TextField
-                fullWidth
-                label="ID Doctor"
-                type="number"
-                value={idDoctor || ""}
-                onChange={(e) => setIdDoctor(Number(e.target.value))}
+              <Autocomplete
+                options={doctores.map((d) => ({
+                  id: d.id_doctor,
+                  label: `#${d.id_doctor} - Usuario ${d.id_usuario}`,
+                }))}
+                value={
+                  idDoctor === null
+                    ? null
+                    : doctores
+                        .map((d) => ({ id: d.id_doctor, label: `#${d.id_doctor} - Usuario ${d.id_usuario}` }))
+                        .find((o) => o.id === idDoctor) || { id: idDoctor, label: `#${idDoctor}` }
+                }
+                onChange={(_, option) => setIdDoctor(option?.id ?? null)}
+                isOptionEqualToValue={(option, value) => option.id === value.id}
+                getOptionLabel={(option) => option.label}
+                openOnFocus
+                renderInput={(params) => (
+                  <TextField {...params} label="Doctor" required />
+                )}
               />
             </Grid>
             <Grid size={{ xs: 12, md: 4 }}>
-              <TextField
-                fullWidth
-                label="ID Consultorio"
-                type="number"
-                value={idConsultorio || ""}
-                onChange={(e) => setIdConsultorio(Number(e.target.value))}
+              <Autocomplete
+                options={consultorios.map((c) => ({
+                  id: c.id_consultorio,
+                  label: `#${c.id_consultorio} - ${c.nombre}`,
+                }))}
+                value={
+                  idConsultorio === null
+                    ? null
+                    : consultorios
+                        .map((c) => ({ id: c.id_consultorio, label: `#${c.id_consultorio} - ${c.nombre}` }))
+                        .find((o) => o.id === idConsultorio) || { id: idConsultorio, label: `#${idConsultorio}` }
+                }
+                onChange={(_, option) => setIdConsultorio(option?.id ?? null)}
+                isOptionEqualToValue={(option, value) => option.id === value.id}
+                getOptionLabel={(option) => option.label}
+                openOnFocus
+                renderInput={(params) => (
+                  <TextField {...params} label="Consultorio" required />
+                )}
               />
             </Grid>
 

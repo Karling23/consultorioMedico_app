@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="VitaCare">
+  <circle cx="32" cy="32" r="30" fill="#2A9D8F"/>
+  <rect x="28" y="16" width="8" height="32" rx="2" fill="#FFFFFF"/>
+  <rect x="16" y="28" width="32" height="8" rx="2" fill="#FFFFFF"/>
+</svg>

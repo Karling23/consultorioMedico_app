@@ -5,7 +5,6 @@ import {
   Chip,
   CircularProgress,
   Container,
-  IconButton,
   Pagination,
   Paper,
   Stack,
@@ -22,6 +21,7 @@ import { useCallback, useEffect, useState } from "react";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
+import { ActionIconButton } from "../../components/common/ActionIconButton";
 
 import {deleteConsultorio,getConsultorios,type ConsultorioDto,type PaginatedConsultorios,} from "../../services/consultorios.service";
 import { ConsultoriosFormDialog } from "../../components/consultorios/ConsultoriosFormDialog";
@@ -177,12 +177,12 @@ export default function ConsultoriosPage() {
                   {/* 5. Protección Botones Editar/Borrar */}
                   {isAdmin && (
                     <TableCell align="right">
-                      <IconButton color="primary" onClick={() => handleEdit(cons)}>
+                      <ActionIconButton color="primary" onClick={() => handleEdit(cons)}>
                         <EditIcon />
-                      </IconButton>
-                      <IconButton color="error" onClick={() => handleDelete(cons.id_consultorio)}>
+                      </ActionIconButton>
+                      <ActionIconButton color="error" onClick={() => handleDelete(cons.id_consultorio)}>
                         <DeleteIcon />
-                      </IconButton>
+                      </ActionIconButton>
                     </TableCell>
                   )}
                 </TableRow>

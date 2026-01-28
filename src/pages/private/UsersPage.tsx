@@ -2,7 +2,6 @@ import {
     Alert,
     Button,
     CircularProgress,
-    IconButton,
     Pagination,
     Paper,
     Stack,
@@ -20,6 +19,7 @@ import { useSearchParams } from "react-router-dom";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
+import { ActionIconButton } from "../../components/common/ActionIconButton";
 import { useAuth } from "../../context/AuthContext";
 import {
     createUsuario,
@@ -219,12 +219,12 @@ export default function UsersPage(): JSX.Element {
                                         {u.fecha_creacion ? u.fecha_creacion.slice(0, 10) : "-"}
                                     </TableCell>
                                         <TableCell align="right">
-                                            <IconButton onClick={() => onEdit(u)}>
+                                            <ActionIconButton color="primary" onClick={() => onEdit(u)}>
                                                 <EditIcon />
-                                            </IconButton>
-                                            <IconButton onClick={() => onDelete(u.id_usuario)}>
+                                            </ActionIconButton>
+                                            <ActionIconButton color="error" onClick={() => onDelete(u.id_usuario)}>
                                                 <DeleteIcon />
-                                            </IconButton>
+                                            </ActionIconButton>
                                         </TableCell>
                                     </TableRow>
                                 ))}
