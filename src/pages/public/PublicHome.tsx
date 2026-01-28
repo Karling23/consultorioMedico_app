@@ -117,7 +117,7 @@ export default function PublicHome(): JSX.Element {
   ];
 
   const mapLink =
-    "https://www.google.com/maps/search/?api=1&query=Western%20UTE%20Av.%20Mariana%20de%20Jes%C3%BAs%2C%20Quito%20170129%2C%20Ecuador";
+    "https://www.openstreetmap.org/export/embed.html?bbox=-78.5020,-0.1990,-78.4920,-0.1890&layer=mapnik&marker=-0.1943,-78.4966";
 
   return (
     <Box>
