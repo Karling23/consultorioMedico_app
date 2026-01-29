@@ -1,73 +1,68 @@
-# React + TypeScript + Vite
+# Consultorio Medico App
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Aplicacion web para la gestion de un consultorio medico (medicamentos, especialidades, doctores, consultorios, citas, pacientes, recetas, etc.).
 
-Currently, two official plugins are available:
+## Requisitos
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- Node.js 18+ (recomendado 20+)
+- npm 9+
 
-## React Compiler
+## Instalacion
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+```
+npm install
+npm run build
+```
+## Comandos
 
-## Expanding the ESLint configuration
+```bash
+npm run dev       # entorno de desarrollo
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+npm run preview   # previsualizacion del build
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+npm run lint      # lint
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+npm run test      # tests
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Variables de entorno
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+Crea un archivo `.env` en la raiz del proyecto con:
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
 ```
+VITE_API_URL=https://alquinga-consultorio-medico-api.desarrollo-software.xyz/
+```
+
+## Conexion a la API
+
+La app consume la API REST configurada en `VITE_API_URL` mediante Axios.
+
+Endpoints principales usados por el frontend:
+
+```
+GET    /citas-medicas
+POST   /citas-medicas
+PATCH  /citas-medicas/:id
+DELETE /citas-medicas/:id
+
+GET    /pacientes
+POST   /pacientes
+PUT    /pacientes/:id
+DELETE /pacientes/:id
+
+GET    /recetas
+POST   /recetas
+PATCH  /recetas/:id
+DELETE /recetas/:id
+
+GET    /medicamentos
+POST   /medicamentos
+PUT    /medicamentos/:id
+DELETE /medicamentos/:id
+```
+
+Notas:
+
+- Para autenticacion se envia `Authorization: Bearer <auth_token>` desde `src/services/api.ts`.
+
+
