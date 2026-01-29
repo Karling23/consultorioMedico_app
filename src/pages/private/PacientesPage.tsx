@@ -1,7 +1,7 @@
 import {Alert,Box,Button,CircularProgress,Container,Pagination,Paper,Stack,Table,TableBody,
 TableCell,TableContainer,TableHead,TableRow,TextField,
 Typography,} from "@mui/material";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
@@ -9,6 +9,7 @@ import { ActionIconButton } from "../../components/common/ActionIconButton";
 
 import {deletePaciente,getPacientes,type PacienteDto,type PaginatedPacientes,} from "../../services/pacientes.service";
 import { PacientesFormDialog } from "../../components/pacientes/PacientesFormDialog";
+import { getUsuarios, type UsuarioDto } from "../../services/usuarios.service";
 
 // 1. IMPORTAMOS useAuth PARA SABER EL ROL
 import { useAuth } from "../../context/AuthContext";
@@ -20,6 +21,26 @@ function useDebouncedValue<T>(value: T, delay: number): T {
     return () => clearTimeout(handler);
   }, [value, delay]);
   return debouncedValue;
+}
+
+async function fetchAllPages<T>(
+  fetchPage: (page: number, limit: number) => Promise<{ items: T[]; meta: { totalPages?: number } }>
+): Promise<T[]> {
+  const items: T[] = [];
+  let page = 1;
+  const limit = 100;
+  while (true) {
+    const res = await fetchPage(page, limit);
+    items.push(...res.items);
+    const totalPages = res.meta.totalPages ?? 1;
+    if (page >= totalPages || res.items.length < limit) break;
+    page += 1;
+  }
+  return items;
+}
+
+function formatIdName(id: number, name?: string): string {
+  return name ? `#${id} - ${name}` : `#${id}`;
 }
 
 export default function PacientesPage() {
@@ -37,6 +58,7 @@ export default function PacientesPage() {
   const [data, setData] = useState<PaginatedPacientes<PacienteDto> | null>(null);
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedPaciente, setSelectedPaciente] = useState<PacienteDto | null>(null);
+  const [usuarios, setUsuarios] = useState<UsuarioDto[]>([]);
 
   type ApiError = {
     response?: {
@@ -68,6 +90,26 @@ export default function PacientesPage() {
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      try {
+        const usuariosRes = await fetchAllPages((p, l) => getUsuarios({ page: p, limit: l }));
+        if (active) setUsuarios(usuariosRes);
+      } catch {
+        if (active) setUsuarios([]);
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const usuarioById = useMemo(
+    () => new Map(usuarios.map((u) => [u.id_usuario, u.nombre_usuario])),
+    [usuarios]
+  );
 
   const handleDelete = async (id: number) => {
     if (!isAdmin) return;
@@ -159,7 +201,9 @@ export default function PacientesPage() {
               {data?.items.map((paciente) => (
                 <TableRow key={paciente.id_paciente}>
                   <TableCell>{paciente.id_paciente}</TableCell>
-                  <TableCell>{paciente.id_usuario}</TableCell>
+                  <TableCell>
+                    {formatIdName(paciente.id_usuario, usuarioById.get(paciente.id_usuario))}
+                  </TableCell>
                   <TableCell>{paciente.cedula}</TableCell>
                   <TableCell>{paciente.fecha_nacimiento?.slice(0, 10) || "-"}</TableCell>
                   <TableCell>{paciente.telefono}</TableCell>

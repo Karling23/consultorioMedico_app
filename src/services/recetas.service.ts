@@ -2,7 +2,7 @@ import { api } from "./api";
 
 export type RecetaDto = {
   id_receta: number;
-  id_historial: number;
+  id_historial: string;
   fecha_emision?: string;
 };
 
@@ -39,7 +39,7 @@ export async function getRecetaById(id: number): Promise<RecetaDto> {
 }
 
 export async function createReceta(payload: {
-  id_historial: number;
+  id_historial: string;
   fecha_emision?: string;
 }): Promise<RecetaDto> {
   const { data } = await api.post("/recetas", payload);
@@ -49,7 +49,7 @@ export async function createReceta(payload: {
 export async function updateReceta(
   id: number,
   payload: {
-    id_historial?: number;
+    id_historial?: string;
     fecha_emision?: string;
   }
 ): Promise<RecetaDto> {

@@ -100,24 +100,24 @@ export default function Register(): JSX.Element {
                         </Box>
                     </Stack>
                     <Typography variant="h4" fontWeight="bold">
-                        Activa tu consultorio en minutos
+                        Registra tu usuario en minutos
                     </Typography>
                     <Typography variant="body1" sx={{ opacity: 0.85 }}>
-                        Configura tu equipo, integra pacientes y accede a flujos optimizados desde el primer día.
+                        Crea tu cuenta y empieza a explorar con acceso seguro desde el primer día.
                     </Typography>
                     <Stack direction="row" spacing={1}>
-                        <Chip label="Onboarding guiado" sx={{ bgcolor: "rgba(255,255,255,0.12)", color: "white" }} />
-                        <Chip label="Soporte dedicado" sx={{ bgcolor: "rgba(255,255,255,0.12)", color: "white" }} />
+                        <Chip label="Registro inmediato" sx={{ bgcolor: "rgba(255,255,255,0.12)", color: "white" }} />
+                        <Chip label="Activación segura" sx={{ bgcolor: "rgba(255,255,255,0.12)", color: "white" }} />
                     </Stack>
                     <Divider sx={{ borderColor: "rgba(255,255,255,0.2)" }} />
                     <Stack spacing={1.5}>
                         <Stack direction="row" spacing={1.5} alignItems="center">
                             <VerifiedUserIcon />
-                            <Typography variant="body2">Accesos por rol y controles de seguridad</Typography>
+                            <Typography variant="body2">Acceso protegido para tu nuevo usuario</Typography>
                         </Stack>
                         <Stack direction="row" spacing={1.5} alignItems="center">
                             <AutoGraphIcon />
-                            <Typography variant="body2">Reportes automáticos desde la primera semana</Typography>
+                            <Typography variant="body2">Cuenta lista para operar desde el primer ingreso</Typography>
                         </Stack>
                     </Stack>
                 </Stack>
@@ -127,7 +127,7 @@ export default function Register(): JSX.Element {
                     <Stack spacing={0.5}>
                         <Typography variant="h5">Crear cuenta</Typography>
                         <Typography variant="body2" color="text.secondary">
-                            Registra tu consultorio y comienza a operar en digital
+                            Regístrate para crear tu usuario de acceso
                         </Typography>
                     </Stack>
 
@@ -164,7 +164,7 @@ export default function Register(): JSX.Element {
                     />
 
                     <Button type="submit" variant="contained" fullWidth size="large" startIcon={<PersonAddIcon />}>
-                        Registrar consultorio
+                        Registrar Usuario
                     </Button>
                 </Stack>
             </Paper>

@@ -17,7 +17,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
@@ -30,6 +30,28 @@ import {
   type PaginatedDoctores,
 } from "../../services/doctores.service";
 import { DoctoresFormDialog } from "../../components/doctores/DoctoresFormDialog";
+import { getUsuarios, type UsuarioDto } from "../../services/usuarios.service";
+import { getEspecialidades, type EspecialidadDto } from "../../services/especialidades.service";
+
+async function fetchAllPages<T>(
+  fetchPage: (page: number, limit: number) => Promise<{ items: T[]; meta: { totalPages?: number } }>
+): Promise<T[]> {
+  const items: T[] = [];
+  let page = 1;
+  const limit = 100;
+  while (true) {
+    const res = await fetchPage(page, limit);
+    items.push(...res.items);
+    const totalPages = res.meta.totalPages ?? 1;
+    if (page >= totalPages || res.items.length < limit) break;
+    page += 1;
+  }
+  return items;
+}
+
+function formatIdName(id: number, name?: string): string {
+  return name ? `#${id} - ${name}` : `#${id}`;
+}
 
 function useDebouncedValue<T>(value: T, delay: number): T {
   const [debouncedValue, setDebouncedValue] = useState(value);
@@ -53,6 +75,8 @@ export default function DoctoresPage() {
   const [data, setData] = useState<PaginatedDoctores<DoctorDto> | null>(null);
   const [openDialog, setOpenDialog] = useState(false);
   const [selected, setSelected] = useState<DoctorDto | null>(null);
+  const [usuarios, setUsuarios] = useState<UsuarioDto[]>([]);
+  const [especialidades, setEspecialidades] = useState<EspecialidadDto[]>([]);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -76,6 +100,40 @@ export default function DoctoresPage() {
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      try {
+        const [usuariosRes, especialidadesRes] = await Promise.all([
+          fetchAllPages((p, l) => getUsuarios({ page: p, limit: l })),
+          fetchAllPages((p, l) => getEspecialidades({ page: p, limit: l })),
+        ]);
+        if (active) {
+          setUsuarios(usuariosRes);
+          setEspecialidades(especialidadesRes);
+        }
+      } catch {
+        if (active) {
+          setUsuarios([]);
+          setEspecialidades([]);
+        }
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const usuarioById = useMemo(
+    () => new Map(usuarios.map((u) => [u.id_usuario, u.nombre_usuario])),
+    [usuarios]
+  );
+
+  const especialidadById = useMemo(
+    () => new Map(especialidades.map((e) => [e.id_especialidad, e.nombre])),
+    [especialidades]
+  );
 
   const handleDelete = async (id: number) => {
     if (!isAdmin) {
@@ -167,8 +225,10 @@ export default function DoctoresPage() {
               {data?.items.map((row) => (
                 <TableRow key={row.id_doctor}>
                   <TableCell>{row.id_doctor}</TableCell>
-                  <TableCell>{row.id_usuario}</TableCell>
-                  <TableCell>{row.id_especialidad}</TableCell>
+                  <TableCell>{formatIdName(row.id_usuario, usuarioById.get(row.id_usuario))}</TableCell>
+                  <TableCell>
+                    {formatIdName(row.id_especialidad, especialidadById.get(row.id_especialidad))}
+                  </TableCell>
                   <TableCell>{row.horario_inicio || "-"}</TableCell>
                   <TableCell>{row.horario_fin || "-"}</TableCell>
                   <TableCell>{row.dias_disponibles || "-"}</TableCell>

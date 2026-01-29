@@ -200,9 +200,9 @@ export default function PublicHome(): JSX.Element {
                   }}
                 >
                   {[
-                    { label: "Eficiencia", icon: <SpeedIcon /> },
-                    { label: "Trazabilidad", icon: <TimelineIcon /> },
-                    { label: "Humanización", icon: <FavoriteIcon /> },
+                    { label: "Eficiencia", icon: <SpeedIcon sx={{ color: "white" }} /> },
+                    { label: "Trazabilidad", icon: <TimelineIcon sx={{ color: "white" }} /> },
+                    { label: "Humanización", icon: <FavoriteIcon sx={{ color: "white" }} /> },
                   ].map((item) => (
                     <Paper
                       key={item.label}
@@ -212,10 +212,13 @@ export default function PublicHome(): JSX.Element {
                         borderRadius: 3,
                         bgcolor: "rgba(255,255,255,0.12)",
                         textAlign: "center",
+                        color: "white",
                       }}
                     >
                       <Box sx={{ display: "flex", justifyContent: "center", mb: 1 }}>{item.icon}</Box>
-                      <Typography variant="subtitle2">{item.label}</Typography>
+                      <Typography variant="subtitle2" sx={{ color: "white" }}>
+                        {item.label}
+                      </Typography>
                     </Paper>
                   ))}
                 </Box>
@@ -347,21 +350,22 @@ export default function PublicHome(): JSX.Element {
                     borderRadius: 4,
                     bgcolor: "rgba(255,255,255,0.08)",
                     height: "100%",
+                    color: "white",
                   }}
                 >
                   <Stack direction="row" spacing={2} alignItems="center">
                     <Avatar src={item.avatar} />
                     <Box>
                       <Typography fontWeight="bold">{item.name}</Typography>
-                      <Typography variant="caption" sx={{ opacity: 0.7 }}>
+                      <Typography variant="caption" sx={{ opacity: 0.7, color: "white" }}>
                         {item.role}
                       </Typography>
                     </Box>
                   </Stack>
-                  <Typography sx={{ mt: 2, opacity: 0.85 }}>{item.text}</Typography>
+                  <Typography sx={{ mt: 2, opacity: 0.85, color: "white" }}>{item.text}</Typography>
                   <Stack direction="row" spacing={0.5} sx={{ mt: 2 }}>
                     {Array.from({ length: 5 }).map((_, index) => (
-                      <StarIcon key={`${item.name}-${index}`} fontSize="small" />
+                      <StarIcon key={`${item.name}-${index}`} fontSize="small" sx={{ color: "#facc15" }} />
                     ))}
                   </Stack>
                 </Paper>

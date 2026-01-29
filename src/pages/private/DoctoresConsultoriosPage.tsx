@@ -19,7 +19,7 @@ import {
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { ActionIconButton } from "../../components/common/ActionIconButton";
 import {
@@ -29,6 +29,28 @@ import {
   type PaginatedDoctoresConsultorios,
 } from "../../services/doctores-consultorios.service";
 import { DoctoresConsultoriosFormDialog } from "../../components/doctores-consultorios/DoctoresConsultoriosFormDialog";
+import { getDoctores, type DoctorDto } from "../../services/doctores.service";
+import { getUsuarios, type UsuarioDto } from "../../services/usuarios.service";
+
+async function fetchAllPages<T>(
+  fetchPage: (page: number, limit: number) => Promise<{ items: T[]; meta: { totalPages?: number } }>
+): Promise<T[]> {
+  const items: T[] = [];
+  let page = 1;
+  const limit = 100;
+  while (true) {
+    const res = await fetchPage(page, limit);
+    items.push(...res.items);
+    const totalPages = res.meta.totalPages ?? 1;
+    if (page >= totalPages || res.items.length < limit) break;
+    page += 1;
+  }
+  return items;
+}
+
+function formatIdName(id: number, name?: string): string {
+  return name ? `#${id} - ${name}` : `#${id}`;
+}
 
 export default function DoctoresConsultoriosPage() {
   const { user } = useAuth();
@@ -41,6 +63,8 @@ export default function DoctoresConsultoriosPage() {
   const [search, setSearch] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [doctores, setDoctores] = useState<DoctorDto[]>([]);
+  const [usuarios, setUsuarios] = useState<UsuarioDto[]>([]);
 
   function useDebouncedValue<T>(value: T, delay: number): T {
     const [debouncedValue, setDebouncedValue] = useState(value);
@@ -71,6 +95,44 @@ export default function DoctoresConsultoriosPage() {
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      try {
+        const [doctoresRes, usuariosRes] = await Promise.all([
+          fetchAllPages((p, l) => getDoctores({ page: p, limit: l })),
+          fetchAllPages((p, l) => getUsuarios({ page: p, limit: l })),
+        ]);
+        if (active) {
+          setDoctores(doctoresRes);
+          setUsuarios(usuariosRes);
+        }
+      } catch {
+        if (active) {
+          setDoctores([]);
+          setUsuarios([]);
+        }
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const usuarioById = useMemo(
+    () => new Map(usuarios.map((u) => [u.id_usuario, u.nombre_usuario])),
+    [usuarios]
+  );
+
+  const doctorNameById = useMemo(() => {
+    const map = new Map<number, string>();
+    doctores.forEach((d) => {
+      const name = usuarioById.get(d.id_usuario);
+      if (name) map.set(d.id_doctor, name);
+    });
+    return map;
+  }, [doctores, usuarioById]);
 
   const handleDelete = async (id: number) => {
     if (!isAdmin) {
@@ -160,7 +222,7 @@ export default function DoctoresConsultoriosPage() {
               {data?.items.map((row) => (
                 <TableRow key={row.id}>
                   <TableCell>{row.id}</TableCell>
-                  <TableCell>{row.id_doctor}</TableCell>
+                  <TableCell>{formatIdName(row.id_doctor, doctorNameById.get(row.id_doctor))}</TableCell>
                   <TableCell>{row.id_consultorio}</TableCell>
                   {isAdmin && (
                     <TableCell align="right">

@@ -231,7 +231,11 @@ export default function HistorialClinicoPage(): JSX.Element {
                 return;
             }
             if (!current) return;
-            await updateHistorialClinico(current.id, payload);
+            await updateHistorialClinico(current.id, {
+                diagnostico: payload.diagnostico,
+                tratamiento: payload.tratamiento,
+                observaciones: payload.observaciones,
+            });
             setOpen(false);
             await load();
             setSuccess("Historial clinico actualizado exitosamente.");

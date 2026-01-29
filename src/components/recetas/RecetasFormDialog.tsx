@@ -28,7 +28,7 @@ interface Props {
   initialData?: RecetaDto | null;
 }
 
-type Option = { id: number; label: string };
+type Option = { id: string; label: string };
 
 export function RecetasFormDialog({
   open,
@@ -38,7 +38,7 @@ export function RecetasFormDialog({
 }: Props) {
   const [loading, setLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [idHistorial, setIdHistorial] = useState<number | null>(null);
+  const [idHistorial, setIdHistorial] = useState<string | null>(null);
   const [fechaEmision, setFechaEmision] = useState("");
   const [historialItems, setHistorialItems] = useState<HistorialClinicoDto[]>([]);
 
@@ -47,7 +47,7 @@ export function RecetasFormDialog({
   useEffect(() => {
     if (open) {
       setErrorMessage(null);
-      setIdHistorial(initialData?.id_historial ?? null);
+      setIdHistorial(initialData?.id_historial ?? null);
       setFechaEmision(initialData?.fecha_emision || "");
     }
   }, [open, initialData]);
@@ -64,16 +64,16 @@ export function RecetasFormDialog({
     })();
   }, [open]);
 
-  const historialOptions: Option[] = historialItems.map((h) => ({
-    id: Number(h.id),
-    label: `#${h.id} - ${h.diagnostico}`,
-  }));
+  const historialOptions: Option[] = historialItems.map((h) => ({
+    id: String(h.id),
+    label: `#${h.id} - ${h.diagnostico}`,
+  }));
 
   const selectedHistorial =
     idHistorial === null
       ? null
       : historialOptions.find((o) => o.id === idHistorial) ||
-        { id: idHistorial, label: `#${idHistorial}` };
+        { id: idHistorial, label: `#${idHistorial}` };
 
   const onSubmit = async () => {
     setLoading(true);
